@@ -1664,7 +1664,948 @@ Still can use binary search with modifications!
 
 ---
 
-## 🎓 LeetCode Problem Mapping
+## �️ BONUS: Advanced Data Structures in Java
+
+### Ready for the Next Level?
+
+Once you've mastered the basics, these **advanced data structures** will make you a coding superstar! 🌟
+
+These are like **power-ups** in a video game - they solve specific problems way faster than basic structures. Many companies ask about these in **senior-level interviews**.
+
+**Note:** These are more challenging. Start learning them AFTER you're comfortable with basic structures!
+
+---
+
+## 🌳 Advanced Trees
+
+### 1. AVL Tree - "The Perfect Balancer" ⚖️
+
+**What it is:** A Binary Search Tree that automatically keeps itself balanced (height difference between left and right is at most 1)
+
+**Real-life example:** A perfectly organized bookshelf that automatically rearranges when you add a book to keep weight balanced
+
+**Why it's special:** Regular BSTs can become like a LinkedList (very slow). AVL Trees prevent this!
+
+**Visual - Unbalanced vs Balanced:**
+```
+Bad (Unbalanced BST):        Good (AVL Tree):
+    1                            4
+     \                         /   \
+      2                       2     6
+       \                     / \   / \
+        3                   1   3 5   7
+         \
+          4                Fast: O(log n)
+           \
+            5              Always balanced!
+             \
+              6
+               \
+                7
+
+Slow: O(n) - like a LinkedList!
+```
+
+**How it works:**
+1. Insert/delete like normal BST
+2. Check if tree became unbalanced
+3. "Rotate" nodes to rebalance
+
+**Rotations (simple example):**
+```
+Before (right-heavy):    After (rotate left):
+    2                        3
+     \                      / \
+      3        →           2   4
+       \
+        4
+```
+
+**Time Complexity:**
+- ✅ Search: **O(log n)** GUARANTEED (unlike regular BST)
+- ✅ Insert: O(log n)
+- ✅ Delete: O(log n)
+
+**When to use:**
+- Need guaranteed fast operations
+- Lots of searches with occasional inserts/deletes
+- Can't afford worst-case O(n) of regular BST
+
+**Java implementation:**
+```java
+class AVLNode {
+    int data;
+    int height;
+    AVLNode left, right;
+    
+    AVLNode(int data) {
+        this.data = data;
+        this.height = 1;
+    }
+}
+
+class AVLTree {
+    AVLNode root;
+    
+    // Get height of node
+    int height(AVLNode node) {
+        return (node == null) ? 0 : node.height;
+    }
+    
+    // Get balance factor
+    int getBalance(AVLNode node) {
+        return (node == null) ? 0 : height(node.left) - height(node.right);
+    }
+    
+    // Right rotate
+    AVLNode rightRotate(AVLNode y) {
+        AVLNode x = y.left;
+        AVLNode T2 = x.right;
+        
+        x.right = y;
+        y.left = T2;
+        
+        y.height = Math.max(height(y.left), height(y.right)) + 1;
+        x.height = Math.max(height(x.left), height(x.right)) + 1;
+        
+        return x;
+    }
+    
+    // Left rotate (similar to right)
+    AVLNode leftRotate(AVLNode x) {
+        AVLNode y = x.right;
+        AVLNode T2 = y.left;
+        
+        y.left = x;
+        x.right = T2;
+        
+        x.height = Math.max(height(x.left), height(x.right)) + 1;
+        y.height = Math.max(height(y.left), height(y.right)) + 1;
+        
+        return y;
+    }
+}
+```
+
+**Practice Problems:**
+- Implement AVL insertion
+- Count rotations needed to balance a BST
+- Design a self-balancing binary search tree
+
+---
+
+### 2. Red-Black Tree - "The Professional's Choice" 🔴⚫
+
+**What it is:** Another self-balancing BST, but uses colors (red/black) instead of height tracking
+
+**Real-life example:** Traffic lights controlling flow to prevent congestion
+
+**Why it's special:** Used in Java's **TreeMap** and **TreeSet**! Also in Linux kernel.
+
+**Rules:**
+1. Every node is RED or BLACK
+2. Root is always BLACK
+3. Red nodes can't have red children (no two reds in a row)
+4. Every path from root to leaf has same number of black nodes
+
+**Visual:**
+```
+        B(10)
+       /     \
+     R(5)   B(15)
+    /   \
+  B(3) B(7)
+
+B = Black, R = Red
+```
+
+**Why colors help:**
+- Simpler rules than AVL height tracking
+- Fewer rotations needed (faster inserts/deletes)
+- Still guarantees O(log n) operations
+
+**Time Complexity:**
+- ✅ Search: O(log n)
+- ✅ Insert: O(log n)
+- ✅ Delete: O(log n)
+
+**When to use:**
+- More inserts/deletes than searches (fewer rotations than AVL)
+- Use **TreeMap** or **TreeSet** in Java (they're Red-Black Trees!)
+
+**Java Example (using TreeMap):**
+```java
+import java.util.TreeMap;
+
+// TreeMap uses Red-Black Tree internally!
+TreeMap<Integer, String> map = new TreeMap<>();
+map.put(3, "Three");
+map.put(1, "One");
+map.put(2, "Two");
+
+// Always sorted!
+for (int key : map.keySet()) {
+    System.out.println(key + ": " + map.get(key));
+}
+// Output: 1: One, 2: Two, 3: Three
+```
+
+**Practice Problems:**
+- Validate Red-Black Tree properties
+- Understand TreeMap internals
+- Compare AVL vs Red-Black trade-offs
+
+---
+
+### 3. Trie (Prefix Tree) - "The Word Wizard" 📚
+
+**What it is:** A tree where each path from root to leaf represents a word/string
+
+**Real-life example:** 
+- Dictionary's index
+- Autocomplete in your phone
+- Spell checker
+
+**Visual:**
+```
+Store: "cat", "car", "card", "dog"
+
+       (root)
+       /    \
+      c      d
+      |      |
+      a      o
+     / \     |
+    t   r    g
+        |
+        d
+
+Finding "car": Follow c→a→r (3 steps!)
+Finding all words starting with "ca": Follow c→a, then explore all branches
+```
+
+**How it works:**
+- Each node = one character
+- Path from root = word/prefix
+- Special marker shows "end of word"
+
+**Java Implementation:**
+```java
+class TrieNode {
+    TrieNode[] children = new TrieNode[26];  // a-z
+    boolean isEndOfWord;
+}
+
+class Trie {
+    TrieNode root = new TrieNode();
+    
+    // Insert word
+    public void insert(String word) {
+        TrieNode node = root;
+        for (char c : word.toCharArray()) {
+            int index = c - 'a';  // Convert 'a'-'z' to 0-25
+            if (node.children[index] == null) {
+                node.children[index] = new TrieNode();
+            }
+            node = node.children[index];
+        }
+        node.isEndOfWord = true;
+    }
+    
+    // Search for word
+    public boolean search(String word) {
+        TrieNode node = root;
+        for (char c : word.toCharArray()) {
+            int index = c - 'a';
+            if (node.children[index] == null) return false;
+            node = node.children[index];
+        }
+        return node.isEndOfWord;
+    }
+    
+    // Check if prefix exists
+    public boolean startsWith(String prefix) {
+        TrieNode node = root;
+        for (char c : prefix.toCharArray()) {
+            int index = c - 'a';
+            if (node.children[index] == null) return false;
+            node = node.children[index];
+        }
+        return true;  // Found prefix path!
+    }
+}
+
+// Usage
+Trie trie = new Trie();
+trie.insert("apple");
+trie.search("apple");      // true
+trie.search("app");        // false (not a complete word)
+trie.startsWith("app");    // true (prefix exists!)
+```
+
+**Time Complexity:**
+- ✅ Insert: **O(m)** where m = word length
+- ✅ Search: **O(m)**
+- ✅ Prefix search: **O(m)**
+
+**Space Complexity:**
+- ❌ Can use a lot of memory: O(ALPHABET_SIZE × m × n)
+  - 26 pointers per node for English alphabet!
+
+**When to use:**
+- Autocomplete features
+- Spell checkers
+- IP routing tables
+- Finding all words with common prefix
+
+**Practice Problems:**
+- [Implement Trie](https://leetcode.com/problems/implement-trie-prefix-tree/) (Medium) ⭐
+- [Word Search II](https://leetcode.com/problems/word-search-ii/) (Hard)
+- [Design Add and Search Words Data Structure](https://leetcode.com/problems/design-add-and-search-words-data-structure/) (Medium)
+
+---
+
+### 4. Segment Tree - "The Range Master" 📊
+
+**What it is:** A tree that stores information about array ranges, allowing fast range queries
+
+**Real-life example:** 
+- Finding max temperature in a date range
+- Stock price analysis (min/max in a range)
+- Game leaderboard (sum of scores in a range)
+
+**Visual - Array & its Segment Tree:**
+```
+Array: [1, 3, 5, 7, 9, 11]
+
+Segment Tree (stores SUM of ranges):
+              36 [0-5]           ← Sum of entire array
+            /          \
+      9 [0-2]          27 [3-5]  ← Sum of halves
+      /    \          /      \
+  4[0-1]  5[2-2]  16[3-4]  11[5-5]
+  /   \            /    \
+1[0] 3[1]        7[3]  9[4]
+
+Can query sum of any range in O(log n)!
+```
+
+**What it does:**
+- Build: O(n)
+- Range query (sum, min, max): **O(log n)**
+- Update value: **O(log n)**
+
+**Java Implementation (Range Sum):**
+```java
+class SegmentTree {
+    int[] tree;
+    int n;
+    
+    SegmentTree(int[] arr) {
+        n = arr.length;
+        tree = new int[4 * n];  // Tree needs 4x space
+        build(arr, 0, 0, n - 1);
+    }
+    
+    void build(int[] arr, int node, int start, int end) {
+        if (start == end) {
+            tree[node] = arr[start];
+        } else {
+            int mid = (start + end) / 2;
+            build(arr, 2*node+1, start, mid);      // Left child
+            build(arr, 2*node+2, mid+1, end);      // Right child
+            tree[node] = tree[2*node+1] + tree[2*node+2];  // Sum of children
+        }
+    }
+    
+    int query(int node, int start, int end, int L, int R) {
+        if (R < start || end < L) return 0;  // No overlap
+        if (L <= start && end <= R) return tree[node];  // Complete overlap
+        
+        // Partial overlap
+        int mid = (start + end) / 2;
+        int leftSum = query(2*node+1, start, mid, L, R);
+        int rightSum = query(2*node+2, mid+1, end, L, R);
+        return leftSum + rightSum;
+    }
+    
+    int rangeSum(int L, int R) {
+        return query(0, 0, n-1, L, R);
+    }
+}
+
+// Usage
+int[] arr = {1, 3, 5, 7, 9, 11};
+SegmentTree st = new SegmentTree(arr);
+System.out.println(st.rangeSum(1, 4));  // Sum from index 1 to 4 = 3+5+7+9 = 24
+```
+
+**When to use:**
+- Lots of range queries (sum, min, max, GCD)
+- Array values update frequently
+- Need fast queries AND updates
+
+**Practice Problems:**
+- [Range Sum Query - Mutable](https://leetcode.com/problems/range-sum-query-mutable/) (Medium)
+- [Range Minimum Query](https://leetcode.com/problems/range-minimum-query/) (Medium)
+
+---
+
+## 🕸️ Graphs - Advanced Concepts
+
+### What is a Graph?
+
+**Simple definition:** A collection of nodes (cities) connected by edges (roads)
+
+**Real-life examples:**
+- Social network (people = nodes, friendships = edges)
+- Google Maps (places = nodes, roads = edges)
+- Website links (pages = nodes, hyperlinks = edges)
+
+### Types of Graphs
+
+**1. Directed vs Undirected**
+```
+Undirected (two-way):    Directed (one-way):
+    A --- B                  A → B
+    |     |                  ↓   ↓
+    C --- D                  C → D
+    
+(Friendship)             (Twitter follows)
+```
+
+**2. Weighted vs Unweighted**
+```
+Unweighted:              Weighted:
+    A --- B                 A -5- B
+    |     |                 |     |
+    C --- D                 C -3- D
+                            
+(Connections)            (Distance in miles)
+```
+
+### Graph Representation in Java
+
+**Method 1: Adjacency List (Most Common)**
+```java
+import java.util.*;
+
+class Graph {
+    private Map<Integer, List<Integer>> adjList = new HashMap<>();
+    
+    // Add edge
+    void addEdge(int from, int to) {
+        adjList.putIfAbsent(from, new ArrayList<>());
+        adjList.get(from).add(to);
+        // For undirected graph, also add reverse:
+        // adjList.putIfAbsent(to, new ArrayList<>());
+        // adjList.get(to).add(from);
+    }
+    
+    // Get neighbors
+    List<Integer> getNeighbors(int node) {
+        return adjList.getOrDefault(node, new ArrayList<>());
+    }
+}
+
+// Usage
+Graph g = new Graph();
+g.addEdge(0, 1);
+g.addEdge(0, 2);
+g.addEdge(1, 2);
+```
+
+**Method 2: Adjacency Matrix**
+```java
+class GraphMatrix {
+    int[][] matrix;
+    int vertices;
+    
+    GraphMatrix(int v) {
+        vertices = v;
+        matrix = new int[v][v];
+    }
+    
+    void addEdge(int from, int to, int weight) {
+        matrix[from][to] = weight;
+        // For undirected: matrix[to][from] = weight;
+    }
+}
+```
+
+### Graph Traversals
+
+**1. BFS (Breadth-First Search) - "Explore Layer by Layer"**
+
+**Like:** Ripples in a pond - spreading outward
+
+```java
+void BFS(int start) {
+    Queue<Integer> queue = new LinkedList<>();
+    Set<Integer> visited = new HashSet<>();
+    
+    queue.add(start);
+    visited.add(start);
+    
+    while (!queue.isEmpty()) {
+        int node = queue.poll();
+        System.out.println(node);
+        
+        for (int neighbor : adjList.get(node)) {
+            if (!visited.contains(neighbor)) {
+                visited.add(neighbor);
+                queue.add(neighbor);
+            }
+        }
+    }
+}
+```
+
+**Visual:**
+```
+    0
+   / \
+  1   2
+ / \
+3   4
+
+BFS from 0: 0 → 1, 2 → 3, 4 (level by level)
+```
+
+**2. DFS (Depth-First Search) - "Explore as Deep as Possible"**
+
+**Like:** Exploring a maze - go as far as you can, then backtrack
+
+```java
+void DFS(int node, Set<Integer> visited) {
+    visited.add(node);
+    System.out.println(node);
+    
+    for (int neighbor : adjList.get(node)) {
+        if (!visited.contains(neighbor)) {
+            DFS(neighbor, visited);
+        }
+    }
+}
+
+// Call: DFS(0, new HashSet<>());
+```
+
+**Visual:**
+```
+    0
+   / \
+  1   2
+ / \
+3   4
+
+DFS from 0: 0 → 1 → 3 → 4 → 2 (go deep first)
+```
+
+### Advanced Graph Algorithms
+
+**1. Dijkstra's Algorithm - "Shortest Path" 🛣️**
+
+**What it does:** Finds shortest path from one node to all others
+
+**Real-life:** GPS finding fastest route
+
+```java
+void dijkstra(int start) {
+    PriorityQueue<int[]> pq = new PriorityQueue<>((a, b) -> a[1] - b[1]);
+    Map<Integer, Integer> dist = new HashMap<>();
+    
+    pq.offer(new int[]{start, 0});
+    dist.put(start, 0);
+    
+    while (!pq.isEmpty()) {
+        int[] current = pq.poll();
+        int node = current[0];
+        int distance = current[1];
+        
+        if (distance > dist.getOrDefault(node, Integer.MAX_VALUE)) continue;
+        
+        for (int[] neighbor : getWeightedNeighbors(node)) {
+            int nextNode = neighbor[0];
+            int weight = neighbor[1];
+            int newDist = distance + weight;
+            
+            if (newDist < dist.getOrDefault(nextNode, Integer.MAX_VALUE)) {
+                dist.put(nextNode, newDist);
+                pq.offer(new int[]{nextNode, newDist});
+            }
+        }
+    }
+}
+```
+
+**Time Complexity:** O((V + E) log V) with priority queue
+
+**Practice Problems:**
+- [Network Delay Time](https://leetcode.com/problems/network-delay-time/) (Medium)
+- [Cheapest Flights Within K Stops](https://leetcode.com/problems/cheapest-flights-within-k-stops/) (Medium)
+
+**2. Union-Find (Disjoint Set) - "The Connector" 🔗**
+
+**What it does:** Efficiently tracks connected components
+
+**Real-life:** Finding if two people are in same friend group
+
+```java
+class UnionFind {
+    int[] parent, rank;
+    
+    UnionFind(int n) {
+        parent = new int[n];
+        rank = new int[n];
+        for (int i = 0; i < n; i++) {
+            parent[i] = i;  // Each node is its own parent initially
+        }
+    }
+    
+    int find(int x) {
+        if (parent[x] != x) {
+            parent[x] = find(parent[x]);  // Path compression
+        }
+        return parent[x];
+    }
+    
+    boolean union(int x, int y) {
+        int rootX = find(x);
+        int rootY = find(y);
+        
+        if (rootX == rootY) return false;  // Already connected
+        
+        // Union by rank
+        if (rank[rootX] < rank[rootY]) {
+            parent[rootX] = rootY;
+        } else if (rank[rootX] > rank[rootY]) {
+            parent[rootY] = rootX;
+        } else {
+            parent[rootY] = rootX;
+            rank[rootX]++;
+        }
+        return true;
+    }
+}
+```
+
+**Time Complexity:** Nearly O(1) for both operations!
+
+**Practice Problems:**
+- [Number of Connected Components](https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/) (Medium)
+- [Redundant Connection](https://leetcode.com/problems/redundant-connection/) (Medium)
+
+---
+
+## 🎁 Specialized Java Data Structures
+
+### 1. Deque (Double-Ended Queue) - "The Two-Way Street" ⬅️➡️
+
+**What it is:** Queue that allows add/remove from BOTH ends
+
+**Real-life example:** A line where VIPs can cut to the front AND people can leave from back
+
+```java
+import java.util.ArrayDeque;
+import java.util.Deque;
+
+Deque<Integer> deque = new ArrayDeque<>();
+
+// Add to both ends
+deque.addFirst(1);   // [1]
+deque.addLast(2);    // [1, 2]
+deque.addFirst(0);   // [0, 1, 2]
+
+// Remove from both ends
+deque.removeFirst(); // [1, 2]
+deque.removeLast();  // [1]
+
+// Peek at both ends
+deque.peekFirst();
+deque.peekLast();
+```
+
+**When to use:**
+- Sliding window problems
+- Implementing both stack AND queue
+- Palindrome checking
+
+**Time Complexity:** O(1) for all operations!
+
+**Practice Problems:**
+- [Sliding Window Maximum](https://leetcode.com/problems/sliding-window-maximum/) (Hard) ⭐
+
+---
+
+### 2. PriorityQueue with Custom Comparator - "The Smart Sorter" 🎯
+
+**What it is:** Heap that can sort by any criteria you want!
+
+```java
+import java.util.PriorityQueue;
+
+// Min-heap (default)
+PriorityQueue<Integer> minHeap = new PriorityQueue<>();
+
+// Max-heap
+PriorityQueue<Integer> maxHeap = new PriorityQueue<>((a, b) -> b - a);
+
+// Custom objects
+class Task {
+    String name;
+    int priority;
+    Task(String name, int priority) {
+        this.name = name;
+        this.priority = priority;
+    }
+}
+
+PriorityQueue<Task> tasks = new PriorityQueue<>((a, b) -> b.priority - a.priority);
+tasks.offer(new Task("Homework", 5));
+tasks.offer(new Task("Game", 2));
+tasks.offer(new Task("Sleep", 10));
+
+// Always get highest priority first!
+Task next = tasks.poll();  // Sleep (priority 10)
+```
+
+**When to use:**
+- Task scheduling
+- Finding K largest/smallest
+- Merge K sorted lists
+
+**Practice Problems:**
+- [Task Scheduler](https://leetcode.com/problems/task-scheduler/) (Medium)
+- [Kth Largest Element in Stream](https://leetcode.com/problems/kth-largest-element-in-a-stream/) (Easy)
+
+---
+
+### 3. TreeMap & TreeSet - "The Sorted Collections" 🗂️
+
+**What they are:** Maps/Sets that keep keys SORTED automatically (using Red-Black Tree)
+
+```java
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+// TreeSet - sorted unique values
+TreeSet<Integer> sorted = new TreeSet<>();
+sorted.add(5);
+sorted.add(1);
+sorted.add(3);
+System.out.println(sorted);  // [1, 3, 5] - Always sorted!
+
+// Useful methods
+sorted.first();    // 1 (smallest)
+sorted.last();     // 5 (largest)
+sorted.floor(4);   // 3 (largest ≤ 4)
+sorted.ceiling(2); // 3 (smallest ≥ 2)
+
+// TreeMap - sorted key-value pairs
+TreeMap<Integer, String> map = new TreeMap<>();
+map.put(3, "Three");
+map.put(1, "One");
+map.put(2, "Two");
+// Iteration is always in sorted order!
+```
+
+**Time Complexity:** O(log n) for add, remove, contains
+
+**When to use:**
+- Need sorted iteration
+- Range queries (between, floor, ceiling)
+- Maintaining sorted data with frequent updates
+
+**Practice Problems:**
+- [My Calendar I](https://leetcode.com/problems/my-calendar-i/) (Medium)
+- [Count of Range Sum](https://leetcode.com/problems/count-of-range-sum/) (Hard)
+
+---
+
+### 4. BitSet - "The Memory Saver" 💾
+
+**What it is:** Array of bits (true/false) that uses WAY less memory
+
+**Memory comparison:**
+- `boolean[] array = new boolean[1000000]` → ~1 MB
+- `BitSet bits = new BitSet(1000000)` → ~125 KB (8x smaller!)
+
+```java
+import java.util.BitSet;
+
+BitSet bits = new BitSet(100);
+
+// Set individual bits
+bits.set(5);     // Set bit 5 to true
+bits.set(10);
+bits.clear(5);   // Set bit 5 to false
+
+// Check bit
+if (bits.get(10)) {  // true
+    System.out.println("Bit 10 is set");
+}
+
+// Bitwise operations
+BitSet set1 = new BitSet();
+BitSet set2 = new BitSet();
+set1.set(1); set1.set(2);
+set2.set(2); set2.set(3);
+
+set1.and(set2);  // Intersection: {2}
+set1.or(set2);   // Union: {1, 2, 3}
+set1.xor(set2);  // Symmetric difference
+```
+
+**When to use:**
+- Large boolean arrays
+- Prime number sieve (Sieve of Eratosthenes)
+- Tracking visited states in large space
+
+**Practice Problems:**
+- [Prime Number Sieve](https://leetcode.com/problems/count-primes/) (Medium)
+- State space search with millions of states
+
+---
+
+### 5. Skip List - "The Probabilistic Speedster" 🎲
+
+**What it is:** Sorted linked list with express lanes for faster search
+
+**Visual:**
+```
+Level 3:  1 -----------------> 10
+Level 2:  1 -------> 5 ------> 10
+Level 1:  1 --> 3 -> 5 --> 8 -> 10
+Level 0:  1->2->3->4->5->6->7->8->9->10
+
+Search for 8: Follow top lane → drop down → find it in ~log n steps!
+```
+
+**Concept:** Like a highway system with express lanes
+
+**Time Complexity:** O(log n) average for search, insert, delete
+
+**Note:** Not in Java standard library, but used in `ConcurrentSkipListMap`
+
+```java
+import java.util.concurrent.ConcurrentSkipListMap;
+
+ConcurrentSkipListMap<Integer, String> skipMap = new ConcurrentSkipListMap<>();
+skipMap.put(3, "Three");
+skipMap.put(1, "One");
+skipMap.put(2, "Two");
+
+// Thread-safe and sorted!
+```
+
+**When to use:**
+- Concurrent programming (thread-safe sorted map)
+- Alternative to balanced trees
+- When you want sorted data with good performance
+
+---
+
+### 6. BlockingQueue - "The Wait-in-Line Queue" 🚦
+
+**What it is:** Thread-safe queue that makes threads WAIT when queue is empty/full
+
+**Real-life example:** Restaurant - chef waits if no orders, customer waits if kitchen is full
+
+```java
+import java.util.concurrent.*;
+
+// Create queue with capacity 10
+BlockingQueue<String> queue = new ArrayBlockingQueue<>(10);
+
+// Producer thread
+new Thread(() -> {
+    try {
+        queue.put("Task 1");  // Blocks if queue is full
+        queue.put("Task 2");
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+}).start();
+
+// Consumer thread
+new Thread(() -> {
+    try {
+        String task = queue.take();  // Blocks if queue is empty
+        System.out.println("Processing: " + task);
+    } catch (InterruptedException e) {
+        e.printStackTrace();
+    }
+}).start();
+```
+
+**When to use:**
+- Producer-Consumer pattern
+- Thread pools
+- Task queues in concurrent applications
+
+**Practice:** Implement producer-consumer with BlockingQueue
+
+---
+
+## 🎯 Advanced Data Structures: Quick Reference
+
+| Structure | Best For | Time Complexity | When to Use |
+|-----------|----------|-----------------|-------------|
+| **AVL Tree** | Guaranteed O(log n) | Search/Insert/Delete: O(log n) | More searches than updates |
+| **Red-Black Tree** | Balanced performance | Search/Insert/Delete: O(log n) | More updates than AVL |
+| **Trie** | String operations | O(m) where m=word length | Autocomplete, spell check |
+| **Segment Tree** | Range queries | Query/Update: O(log n) | Range sum/min/max |
+| **Graph** | Relationships | BFS/DFS: O(V+E) | Networks, paths |
+| **Deque** | Both ends access | All ops: O(1) | Sliding window |
+| **TreeMap/Set** | Sorted data | Ops: O(log n) | Sorted iteration |
+| **BitSet** | Boolean flags | Set/Get: O(1) | Memory-efficient flags |
+| **Skip List** | Sorted concurrent | Ops: O(log n) avg | Thread-safe sorted data |
+| **BlockingQueue** | Thread coordination | Ops: O(1) | Producer-consumer |
+
+---
+
+## 🏆 Bonus LeetCode Problems for Advanced Structures
+
+### Advanced Trees
+- [Implement Trie](https://leetcode.com/problems/implement-trie-prefix-tree/) (Medium) ⭐
+- [Word Search II](https://leetcode.com/problems/word-search-ii/) (Hard)
+- [Range Sum Query - Mutable](https://leetcode.com/problems/range-sum-query-mutable/) (Medium)
+
+### Graphs
+- [Number of Islands](https://leetcode.com/problems/number-of-islands/) (Medium) ⭐
+- [Course Schedule](https://leetcode.com/problems/course-schedule/) (Medium) ⭐
+- [Network Delay Time](https://leetcode.com/problems/network-delay-time/) (Medium)
+- [Cheapest Flights Within K Stops](https://leetcode.com/problems/cheapest-flights-within-k-stops/) (Medium)
+- [Min Cost to Connect All Points](https://leetcode.com/problems/min-cost-to-connect-all-points/) (Medium)
+
+### Specialized Structures
+- [Sliding Window Maximum](https://leetcode.com/problems/sliding-window-maximum/) (Hard) - Deque
+- [LRU Cache](https://leetcode.com/problems/lru-cache/) (Medium) ⭐ - HashMap + Doubly LinkedList
+- [Design Twitter](https://leetcode.com/problems/design-twitter/) (Medium) - Multiple structures
+- [My Calendar I](https://leetcode.com/problems/my-calendar-i/) (Medium) - TreeMap
+
+---
+
+## 🎓 When to Learn Advanced Structures
+
+**Timeline Recommendation:**
+
+**Weeks 1-2:** Master basic structures (Array, LinkedList, Stack, Queue, HashMap)
+
+**Weeks 3-4:** Learn Trees and Heaps
+
+**Weeks 5-6:** Study Graphs (BFS, DFS, basic algorithms)
+
+**Weeks 7-8:** Explore advanced trees (AVL, Red-Black, Trie)
+
+**Weeks 9+:** Learn specialized structures as needed for specific problems
+
+**Remember:** Master the basics first! Advanced structures build on fundamentals.
+
+---
+
+## �🎓 LeetCode Problem Mapping
 
 ### Priority Problems by Plan
 
