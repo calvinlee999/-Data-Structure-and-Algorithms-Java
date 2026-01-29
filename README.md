@@ -2605,6 +2605,999 @@ new Thread(() -> {
 
 ---
 
+## 💼 Advanced Interview Questions & Answers
+
+### Real-World Scenarios for Senior Engineers
+
+These questions are commonly asked in **senior-level technical interviews** at companies like **fintech startups, FAANG companies, and financial institutions**. They test not just your knowledge of data structures, but your ability to make **engineering trade-offs** and apply them to **real-world systems**.
+
+---
+
+### 🎯 Top 15 Advanced Data Structure Interview Questions
+
+---
+
+### Question 1: Why does Java use Red-Black Tree for TreeMap instead of AVL Tree?
+
+**Level:** Senior
+
+**Answer:**
+
+While AVL trees are **more strictly balanced** (height difference ≤ 1), providing faster lookups, Red-Black Trees are "**balanced enough**" and perform significantly better on **insertions and deletions**.
+
+**Key Differences:**
+
+| Feature | AVL Tree | Red-Black Tree |
+|---------|----------|----------------|
+| **Balance** | Stricter (height diff ≤ 1) | Looser (height ≤ 2 × log n) |
+| **Rotations on Insert** | Up to log n | Up to 2 |
+| **Rotations on Delete** | Up to log n | Up to 3 |
+| **Search Speed** | Faster ✅ | Slightly slower |
+| **Insert/Delete Speed** | Slower | Faster ✅ |
+
+**Real-World Impact:**
+
+In an environment with **frequent stock price updates, transaction logging, or real-time data streams**, the throughput of a Red-Black Tree is superior because:
+- Fewer rotations = less CPU overhead
+- Better for write-heavy workloads
+- Still maintains O(log n) for all operations
+
+**Code Example:**
+```java
+// TreeMap uses Red-Black Tree internally
+TreeMap<String, Double> stockPrices = new TreeMap<>();
+
+// Frequent updates (where RB-Tree excels)
+stockPrices.put("AAPL", 150.25);  // Fast insert
+stockPrices.put("GOOGL", 2800.50); // Fast insert
+stockPrices.put("AAPL", 151.00);   // Fast update
+
+// Still fast lookups
+Double price = stockPrices.get("AAPL");  // O(log n)
+```
+
+**Follow-up:** When would you choose AVL over Red-Black?
+- **Answer:** When you have a **read-heavy** workload with infrequent updates, like a static dictionary or configuration store where you do millions of lookups but rarely insert/delete.
+
+---
+
+### Question 2: How does Java HashMap handle collisions after Java 8?
+
+**Level:** Mid to Senior
+
+**Answer:**
+
+Java HashMap has evolved to handle collisions more efficiently:
+
+**Before Java 8:**
+- Collisions handled via **LinkedList (Chaining)**
+- Worst-case lookup: **O(n)** if many collisions in one bucket
+
+**After Java 8:**
+- Initially uses **LinkedList** for collisions
+- When bucket exceeds **threshold (8 elements)**, it **"Treeifies"**
+- Converts LinkedList → **Red-Black Tree**
+- Worst-case lookup improves: **O(n) → O(log n)**
+
+**Visual:**
+```
+Before Treeification (≤ 8 elements):
+Bucket 5: [Entry1] → [Entry2] → [Entry3] ... → [Entry8]
+Search: O(n) in worst case
+
+After Treeification (> 8 elements):
+Bucket 5: Red-Black Tree
+         [Entry5]
+        /        \
+    [Entry2]    [Entry7]
+    /    \      /    \
+  [E1] [E3]  [E6]  [E8]
+Search: O(log n)!
+```
+
+**Code to Demonstrate:**
+```java
+HashMap<BadHashKey, String> map = new HashMap<>();
+
+// BadHashKey always returns same hashCode (worst case)
+class BadHashKey {
+    int value;
+    BadHashKey(int value) { this.value = value; }
+    
+    @Override
+    public int hashCode() { return 1; }  // All collide!
+    
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof BadHashKey && 
+               ((BadHashKey)obj).value == this.value;
+    }
+}
+
+// Add 10 elements - they all go to same bucket
+for (int i = 0; i < 10; i++) {
+    map.put(new BadHashKey(i), "Value " + i);
+}
+
+// After 8th element, bucket becomes a Red-Black Tree
+// Search is now O(log n) instead of O(n)!
+```
+
+**De-Treeification:**
+When elements drop below **6**, the tree converts back to LinkedList (to avoid overhead for small buckets).
+
+**Follow-up:** Why threshold 8 and not 4 or 16?
+- **Answer:** Statistical analysis shows that under random hash distribution, having 8+ elements in a bucket is extremely rare (Poisson distribution). The threshold balances between:
+  - Tree overhead (higher memory)
+  - Performance gain (only worthwhile when collisions are significant)
+
+---
+
+### Question 3: Explain the "Exactly-Once" challenge using BlockingQueue
+
+**Level:** Senior (Concurrency)
+
+**Answer:**
+
+**The Problem:**
+In a concurrent application using `BlockingQueue`, if a consumer **takes** a task but **fails before processing**, the data is **lost** (at-most-once delivery).
+
+**Scenario:**
+```java
+BlockingQueue<Transaction> queue = new ArrayBlockingQueue<>(100);
+
+// Consumer thread
+new Thread(() -> {
+    while (true) {
+        Transaction txn = queue.take();  // Removed from queue
+        // ⚠️ IF CRASH HAPPENS HERE, txn is lost!
+        processTransaction(txn);  // Might fail
+    }
+}).start();
+```
+
+**Solutions:**
+
+**1. Transactional Outbox Pattern**
+```java
+// Store task in database first, then process
+@Transactional
+public void processTransaction(Transaction txn) {
+    // 1. Save to "processing" table
+    outboxRepository.save(txn);
+    
+    // 2. Process
+    paymentService.process(txn);
+    
+    // 3. Mark as complete (in same transaction)
+    outboxRepository.markComplete(txn.getId());
+    
+    // If anything fails, entire transaction rolls back
+}
+```
+
+**2. Use Persistent Queue (Apache Kafka)**
+```java
+// Kafka doesn't remove message until consumer commits offset
+KafkaConsumer<String, Transaction> consumer = new KafkaConsumer<>(props);
+
+while (true) {
+    ConsumerRecords<String, Transaction> records = consumer.poll(100);
+    
+    for (ConsumerRecord<String, Transaction> record : records) {
+        try {
+            processTransaction(record.value());
+            // Only commit offset AFTER successful processing
+            consumer.commitSync();  // Exactly-once guaranteed!
+        } catch (Exception e) {
+            // Don't commit - message will be redelivered
+            log.error("Processing failed", e);
+        }
+    }
+}
+```
+
+**3. Acknowledgment-Based Queue**
+```java
+// Custom implementation with acknowledgment
+class AckBlockingQueue<T> {
+    private BlockingQueue<Task<T>> queue = new LinkedBlockingQueue<>();
+    
+    public Task<T> take() throws InterruptedException {
+        return queue.take();  // Item still tracked
+    }
+    
+    public void acknowledge(Task<T> task) {
+        // Only now is it truly removed
+        task.markComplete();
+    }
+    
+    public void nack(Task<T> task) {
+        // Put back in queue
+        queue.offer(task);
+    }
+}
+```
+
+**Real-World Use:**
+In a **Spring Boot lending app** processing loan applications:
+- Producer: API receives loan applications
+- Queue: Holds applications for processing
+- Consumer: Background worker validates credit score
+
+Without exactly-once, a crash during credit check means the application is **lost** (customer never gets response!).
+
+---
+
+### Question 4: When would you prefer Skip List over Binary Search Tree?
+
+**Level:** Senior (Concurrent Systems)
+
+**Answer:**
+
+**Skip Lists** are highly effective in **concurrent/parallel environments** because they're easier to make thread-safe.
+
+**The Problem with Concurrent BSTs:**
+
+Implementing a **thread-safe balanced BST** is notoriously difficult:
+```java
+// Red-Black Tree concurrent insert requires:
+synchronized void insert(int value) {
+    // 1. Insert node
+    // 2. Fix violations (may need rotations)
+    // 3. Rotations require locking ENTIRE subtrees
+    // ⚠️ Complex locking = deadlocks + poor performance
+}
+```
+
+**Why Skip Lists Win:**
+
+1. **Probabilistic Structure** (no strict balancing)
+2. **Local Modifications** (changes are localized)
+3. **Lock-Free Algorithms** (or fine-grained locking)
+
+**Visual:**
+```
+Skip List (multiple levels):
+Level 3:  1 -----------------> 10
+Level 2:  1 -------> 5 ------> 10
+Level 1:  1 --> 3 -> 5 --> 8 -> 10
+Level 0:  1->2->3->4->5->6->7->8->9->10
+
+Inserting 6:
+- Only affects nodes near 6
+- No global rebalancing needed!
+- Other threads can work on other parts
+```
+
+**Java Example:**
+```java
+import java.util.concurrent.ConcurrentSkipListMap;
+
+// Thread-safe sorted map using Skip List
+ConcurrentSkipListMap<Integer, String> map = new ConcurrentSkipListMap<>();
+
+// Multiple threads can safely insert/remove
+ExecutorService executor = Executors.newFixedThreadPool(10);
+
+for (int i = 0; i < 10; i++) {
+    final int id = i;
+    executor.submit(() -> {
+        map.put(id, "Value " + id);  // Thread-safe!
+    });
+}
+
+// Safe concurrent iteration (snapshot)
+for (Map.Entry<Integer, String> entry : map.entrySet()) {
+    System.out.println(entry.getKey() + ": " + entry.getValue());
+}
+```
+
+**Comparison:**
+
+| Feature | Skip List | Balanced BST |
+|---------|-----------|--------------|
+| **Concurrent Insert** | Easy (local changes) | Hard (global rotations) |
+| **Lock Complexity** | Fine-grained or lock-free | Requires complex locking |
+| **Performance** | O(log n) average | O(log n) guaranteed |
+| **Implementation** | Simpler concurrent version | Very complex |
+
+**When to Use:**
+- ✅ High-concurrency sorted map/set
+- ✅ Frequent updates from multiple threads
+- ✅ Real-time leaderboards, price books, auction systems
+
+**When NOT to Use:**
+- ❌ Single-threaded (BST is simpler)
+- ❌ Need deterministic O(log n) (Skip List is average-case)
+
+---
+
+### Question 5: How would you model a "Follower" relationship in a social-finance app?
+
+**Level:** Mid to Senior (Graph Modeling)
+
+**Answer:**
+
+Use a **Directed Graph** implemented with an **Adjacency List**.
+
+**Why Directed?**
+- Following is **one-way**: A → B (A follows B) doesn't mean B → A
+
+**Implementation:**
+```java
+class SocialGraph {
+    // UserId → Set of UserIds they follow
+    private Map<Integer, Set<Integer>> following = new HashMap<>();
+    
+    // UserId → Set of UserIds who follow them
+    private Map<Integer, Set<Integer>> followers = new HashMap<>();
+    
+    // Follow: A follows B
+    public void follow(int userA, int userB) {
+        following.putIfAbsent(userA, new HashSet<>());
+        followers.putIfAbsent(userB, new HashSet<>());
+        
+        following.get(userA).add(userB);  // A follows B
+        followers.get(userB).add(userA);  // B is followed by A
+        
+        // O(1) average time!
+    }
+    
+    // Unfollow
+    public void unfollow(int userA, int userB) {
+        if (following.containsKey(userA)) {
+            following.get(userA).remove(userB);
+        }
+        if (followers.containsKey(userB)) {
+            followers.get(userB).remove(userA);
+        }
+    }
+    
+    // Check if A follows B
+    public boolean isFollowing(int userA, int userB) {
+        return following.getOrDefault(userA, Collections.emptySet())
+                        .contains(userB);
+        // O(1) lookup!
+    }
+    
+    // Get all followers of a user
+    public Set<Integer> getFollowers(int userId) {
+        return followers.getOrDefault(userId, Collections.emptySet());
+    }
+    
+    // Get all users that userId follows
+    public Set<Integer> getFollowing(int userId) {
+        return following.getOrDefault(userId, Collections.emptySet());
+    }
+    
+    // Get follower count (for social proof)
+    public int getFollowerCount(int userId) {
+        return followers.getOrDefault(userId, Collections.emptySet()).size();
+    }
+}
+```
+
+**Why HashSet?**
+- **Uniqueness**: No duplicate followers
+- **O(1) lookups**: Fast to check "does A follow B?"
+- **O(1) add/remove**: Fast follow/unfollow
+
+**Advanced Features:**
+
+**1. Recommend Users (Find Friends of Friends)**
+```java
+public Set<Integer> recommendUsers(int userId) {
+    Set<Integer> recommendations = new HashSet<>();
+    Set<Integer> myFollowing = getFollowing(userId);
+    
+    // For each person I follow
+    for (int friend : myFollowing) {
+        // Get who they follow (friends of friends)
+        for (int friendOfFriend : getFollowing(friend)) {
+            // Recommend if I don't already follow them
+            if (!myFollowing.contains(friendOfFriend) && 
+                friendOfFriend != userId) {
+                recommendations.add(friendOfFriend);
+            }
+        }
+    }
+    
+    return recommendations;
+}
+```
+
+**2. Find Influencers (Most Followers)**
+```java
+public List<Integer> getTopInfluencers(int limit) {
+    return followers.entrySet().stream()
+        .sorted((a, b) -> b.getValue().size() - a.getValue().size())
+        .limit(limit)
+        .map(Map.Entry::getKey)
+        .collect(Collectors.toList());
+}
+```
+
+**3. Detect Mutual Followers**
+```java
+public boolean areMutualFollowers(int userA, int userB) {
+    return isFollowing(userA, userB) && isFollowing(userB, userA);
+}
+```
+
+**Space Complexity:** O(V + E) where V = users, E = follow relationships
+
+**Time Complexity:**
+- Follow/Unfollow: O(1)
+- Check following: O(1)
+- Get followers/following: O(1) to get set, O(k) to iterate (k = count)
+
+**Real-World Use (Social-Finance):**
+- **Stock Tip Sharing**: Users follow expert traders
+- **Investment Clubs**: Track group memberships
+- **Referral Networks**: Model who referred whom
+- **Fraud Detection**: Analyze suspicious follow patterns
+
+---
+
+### Question 6: Explain HashMap "Treeification" threshold and why it's 8
+
+**Level:** Mid
+
+**Answer:**
+
+**The Magic Number 8:**
+
+Java uses a **threshold of 8** elements in a bucket before converting a LinkedList to a Red-Black Tree.
+
+**Mathematical Reason (Poisson Distribution):**
+
+Under **ideal random hashing**, the probability of having k elements in a bucket follows a Poisson distribution:
+
+```
+P(k elements) = (e^(-0.5) * 0.5^k) / k!
+
+P(8) ≈ 0.00000006 (1 in 16 million!)
+```
+
+This means with a **good hash function**, having 8+ collisions in one bucket is **extremely rare**.
+
+**Why Not Lower (4) or Higher (16)?**
+
+**Too Low (e.g., 4):**
+```java
+// Tree overhead not worth it
+Tree Node: 40 bytes per node (pointers, color, etc.)
+List Node: 24 bytes per node
+
+For 4 elements:
+- LinkedList: 4 × 24 = 96 bytes
+- Tree: 4 × 40 = 160 bytes
+- Overhead: 67% more memory!
+- Search savings: O(4) → O(log 4) = O(2) (minimal gain)
+```
+
+**Too High (e.g., 16):**
+```java
+// Suffering with slow LinkedList for too long
+O(16) linear search vs O(log 16) = O(4) tree search
+- 4x slower when collisions DO occur
+```
+
+**De-Treeification at 6:**
+
+When size drops below **6**, tree converts back to LinkedList.
+
+**Why 6 and not 8?**
+- **Hysteresis**: Avoids "thrashing" (constant converting back-and-forth)
+- If threshold was 8 for both, adding/removing 8th element would cause constant conversion
+
+**Code Example:**
+```java
+// Force collisions to see treeification
+class AlwaysCollide {
+    @Override
+    public int hashCode() { return 1; }  // All hash to 1!
+    
+    @Override
+    public boolean equals(Object obj) {
+        return this == obj;
+    }
+}
+
+HashMap<AlwaysCollide, String> map = new HashMap<>();
+
+// Add 9 elements (all collide)
+for (int i = 0; i < 9; i++) {
+    map.put(new AlwaysCollide(), "Value " + i);
+}
+
+// Internally:
+// Elements 0-7: LinkedList (O(n) search)
+// Element 8+: Converts to Red-Black Tree (O(log n) search)
+```
+
+---
+
+### Question 7: How does BitSet save memory compared to boolean[]?
+
+**Level:** Mid
+
+**Answer:**
+
+**Memory Comparison:**
+
+**boolean[] array:**
+```java
+boolean[] flags = new boolean[1_000_000];
+// Each boolean takes 1 BYTE (8 bits)
+// Total: 1,000,000 bytes = ~1 MB
+```
+
+**BitSet:**
+```java
+BitSet bits = new BitSet(1_000_000);
+// Each element takes 1 BIT
+// Total: 1,000,000 bits = 125,000 bytes = ~122 KB
+// Savings: 8x less memory!
+```
+
+**How It Works:**
+
+BitSet stores bits in **long[] array** (each long = 64 bits):
+
+```java
+// Internally
+class BitSet {
+    long[] words;  // Each long holds 64 bits
+    
+    // To set bit 100:
+    public void set(int bitIndex) {
+        int wordIndex = bitIndex / 64;    // Which long? (100/64 = 1)
+        int bitPosition = bitIndex % 64;  // Which bit in that long? (100%64 = 36)
+        words[wordIndex] |= (1L << bitPosition);  // Set bit using OR
+    }
+    
+    // To get bit 100:
+    public boolean get(int bitIndex) {
+        int wordIndex = bitIndex / 64;
+        int bitPosition = bitIndex % 64;
+        return (words[wordIndex] & (1L << bitPosition)) != 0;  // Check bit using AND
+    }
+}
+```
+
+**Real-World Use Case (Financial System):**
+
+**Scenario:** Mark 10 million transactions for "stress test" status
+
+```java
+// Bad approach: boolean array
+boolean[] isStressTest = new boolean[10_000_000];
+// Memory: 10 MB
+
+// Good approach: BitSet
+BitSet isStressTest = new BitSet(10_000_000);
+// Memory: 1.25 MB (8x savings!)
+
+// Mark transactions 1000-2000 as stress test
+for (int txnId = 1000; txnId <= 2000; txnId++) {
+    isStressTest.set(txnId);
+}
+
+// Check if transaction 1500 is stress test
+if (isStressTest.get(1500)) {
+    // Apply stress test logic
+}
+
+// Bitwise operations (FAST!)
+BitSet setA = new BitSet();
+BitSet setB = new BitSet();
+// ... populate sets ...
+
+setA.and(setB);  // Intersection
+setA.or(setB);   // Union
+setA.xor(setB);  // Symmetric difference
+```
+
+**Performance:**
+- Set/Get: **O(1)** (bit manipulation)
+- Operations are **cache-friendly** (packed data)
+
+**When to Use:**
+- ✅ Large boolean arrays (> 10,000 elements)
+- ✅ Prime number sieves
+- ✅ Tracking millions of flags/states
+- ✅ Bloom filters
+
+---
+
+### Question 8: Design an LRU Cache - Explain the Data Structure Choice
+
+**Level:** Medium to Senior
+
+**Answer:**
+
+**Requirements:**
+- Get(key): O(1)
+- Put(key, value): O(1)
+- Evict least recently used when full
+
+**Solution: HashMap + Doubly LinkedList**
+
+**Why This Combination?**
+
+| Operation | HashMap | Doubly LinkedList |
+|-----------|---------|-------------------|
+| **Find key** | O(1) ✅ | O(n) ❌ |
+| **Update order** | ❌ | O(1) ✅ (if have node reference) |
+| **Remove from middle** | ❌ | O(1) ✅ (if have node reference) |
+| **Find LRU item** | ❌ | O(1) ✅ (tail) |
+
+**Together: O(1) for everything!**
+
+**Implementation:**
+```java
+class LRUCache {
+    class Node {
+        int key, value;
+        Node prev, next;
+        Node(int key, int value) {
+            this.key = key;
+            this.value = value;
+        }
+    }
+    
+    private Map<Integer, Node> cache = new HashMap<>();
+    private Node head = new Node(0, 0);  // Dummy head
+    private Node tail = new Node(0, 0);  // Dummy tail
+    private int capacity;
+    
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        head.next = tail;
+        tail.prev = head;
+    }
+    
+    public int get(int key) {
+        if (!cache.containsKey(key)) return -1;
+        
+        Node node = cache.get(key);
+        // Move to front (most recently used)
+        remove(node);
+        addToFront(node);
+        return node.value;
+    }
+    
+    public void put(int key, int value) {
+        if (cache.containsKey(key)) {
+            remove(cache.get(key));
+        }
+        
+        Node node = new Node(key, value);
+        addToFront(node);
+        cache.put(key, node);
+        
+        // Evict LRU if over capacity
+        if (cache.size() > capacity) {
+            Node lru = tail.prev;  // Least recently used
+            remove(lru);
+            cache.remove(lru.key);
+        }
+    }
+    
+    // O(1) remove (we have node reference!)
+    private void remove(Node node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+    }
+    
+    // O(1) add to front (most recent)
+    private void addToFront(Node node) {
+        node.next = head.next;
+        node.prev = head;
+        head.next.prev = node;
+        head.next = node;
+    }
+}
+```
+
+**Visual:**
+```
+Most Recent                    Least Recent
+   HEAD → [K1:V1] ⇄ [K2:V2] ⇄ [K3:V3] ← TAIL
+
+Get(K2):
+   HEAD → [K2:V2] ⇄ [K1:V1] ⇄ [K3:V3] ← TAIL
+          (moved to front)
+
+Put(K4:V4) when full:
+   HEAD → [K4:V4] ⇄ [K2:V2] ⇄ [K1:V1] ← TAIL
+          (K3 evicted)
+```
+
+**Why Not Just HashMap?**
+- Can't track access order
+
+**Why Not Just LinkedList?**
+- O(n) to find elements
+
+**Real-World Use:**
+- Database query cache
+- Browser cache
+- Redis cache implementation
+- CDN cache
+
+---
+
+### Question 9: Explain the difference between ConcurrentHashMap and Collections.synchronizedMap()
+
+**Level:** Senior (Concurrency)
+
+**Answer:**
+
+**Key Difference: Lock Granularity**
+
+**Collections.synchronizedMap():**
+```java
+Map<String, Integer> map = Collections.synchronizedMap(new HashMap<>());
+
+// Internally wraps EVERY method with synchronized
+synchronized Map<String, Integer> {
+    public Integer get(Object key) {
+        synchronized (mutex) {  // ENTIRE map locked!
+            return m.get(key);
+        }
+    }
+    
+    public Integer put(String key, Integer value) {
+        synchronized (mutex) {  // ENTIRE map locked!
+            return m.put(key, value);
+        }
+    }
+}
+```
+
+**Problem:** Only ONE thread can access map at a time (even for reads!)
+
+**ConcurrentHashMap:**
+```java
+// Uses lock striping (multiple locks for different segments)
+ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+
+// Internally divides into segments (Java 7) or buckets (Java 8+)
+// Multiple threads can access different segments simultaneously!
+```
+
+**Performance Comparison:**
+
+| Feature | synchronizedMap | ConcurrentHashMap |
+|---------|-----------------|-------------------|
+| **Read Concurrency** | ❌ Locked | ✅ Lock-free reads |
+| **Write Concurrency** | ❌ One at a time | ✅ Multiple (different buckets) |
+| **Null Keys/Values** | ✅ Allowed | ❌ Not allowed |
+| **Iteration** | Need external sync | ✅ Weakly consistent |
+| **Performance** | Poor under contention | Excellent |
+
+**Code Comparison:**
+```java
+// Benchmark: 10 threads, 1M operations each
+
+// synchronizedMap
+Map<Integer, Integer> syncMap = Collections.synchronizedMap(new HashMap<>());
+long start = System.currentTimeMillis();
+runConcurrentTest(syncMap, 10, 1_000_000);
+// Time: ~5000ms (threads wait for lock)
+
+// ConcurrentHashMap
+ConcurrentHashMap<Integer, Integer> concMap = new ConcurrentHashMap<>();
+start = System.currentTimeMillis();
+runConcurrentTest(concMap, 10, 1_000_000);
+// Time: ~800ms (threads run in parallel!)
+```
+
+**ConcurrentHashMap Special Methods:**
+```java
+ConcurrentHashMap<String, Integer> counts = new ConcurrentHashMap<>();
+
+// Atomic increment (thread-safe)
+counts.compute("key", (k, v) -> v == null ? 1 : v + 1);
+
+// Atomic get-or-create
+counts.computeIfAbsent("key", k -> expensiveComputation());
+
+// Atomic conditional update
+counts.replace("key", oldValue, newValue);
+
+// Atomic merge
+counts.merge("key", 1, Integer::sum);  // Increment by 1
+```
+
+**When to Use:**
+- **ConcurrentHashMap**: High-concurrency scenarios (web servers, caches)
+- **synchronizedMap**: Low contention, need null support
+
+---
+
+### Question 10: How would you implement a Rate Limiter using data structures?
+
+**Level:** Senior (System Design)
+
+**Answer:**
+
+**Requirement:** Allow max N requests per time window (e.g., 100 requests/minute)
+
+**Solution: Sliding Window with TreeMap**
+
+```java
+class RateLimiter {
+    private TreeMap<Long, Integer> requestCounts = new TreeMap<>();
+    private int maxRequests;
+    private long windowMs;
+    
+    public RateLimiter(int maxRequests, long windowMs) {
+        this.maxRequests = maxRequests;
+        this.windowMs = windowMs;
+    }
+    
+    public synchronized boolean allowRequest() {
+        long now = System.currentTimeMillis();
+        long windowStart = now - windowMs;
+        
+        // Remove old requests outside window
+        requestCounts.headMap(windowStart).clear();
+        
+        // Count requests in current window
+        int count = requestCounts.values().stream()
+                                 .mapToInt(Integer::intValue)
+                                 .sum();
+        
+        if (count < maxRequests) {
+            requestCounts.put(now, requestCounts.getOrDefault(now, 0) + 1);
+            return true;  // Allow
+        }
+        
+        return false;  // Rate limited!
+    }
+}
+
+// Usage
+RateLimiter limiter = new RateLimiter(100, 60_000);  // 100 req/min
+
+if (limiter.allowRequest()) {
+    processRequest();
+} else {
+    return "429 Too Many Requests";
+}
+```
+
+**Why TreeMap?**
+- ✅ Sorted by timestamp
+- ✅ `headMap(windowStart)` gets all old entries in O(log n)
+- ✅ `.clear()` removes them efficiently
+
+**Alternative: Token Bucket (More Memory Efficient)**
+
+```java
+class TokenBucket {
+    private double tokens;
+    private double maxTokens;
+    private double refillRate;  // tokens per second
+    private long lastRefill;
+    
+    public TokenBucket(double maxTokens, double refillRate) {
+        this.tokens = maxTokens;
+        this.maxTokens = maxTokens;
+        this.refillRate = refillRate;
+        this.lastRefill = System.currentTimeMillis();
+    }
+    
+    public synchronized boolean tryConsume() {
+        refill();
+        
+        if (tokens >= 1.0) {
+            tokens -= 1.0;
+            return true;
+        }
+        
+        return false;
+    }
+    
+    private void refill() {
+        long now = System.currentTimeMillis();
+        double secondsPassed = (now - lastRefill) / 1000.0;
+        tokens = Math.min(maxTokens, tokens + secondsPassed * refillRate);
+        lastRefill = now;
+    }
+}
+
+// 100 requests per minute = 100/60 = 1.67 tokens/second
+TokenBucket bucket = new TokenBucket(100, 1.67);
+```
+
+**Comparison:**
+
+| Approach | Memory | Precision | Implementation |
+|----------|--------|-----------|----------------|
+| **Sliding Window** | O(n) requests | Exact | TreeMap |
+| **Token Bucket** | O(1) | Approximate | Simple variables |
+
+**Real-World:**
+- API rate limiting (Stripe, Twitter, AWS)
+- DDoS protection
+- Resource throttling
+
+---
+
+## 🏦 Financial Engineering Use Cases
+
+### Real-World Applications in Finance
+
+| Data Structure | Financial Use Case | Why This Structure? |
+|----------------|-------------------|---------------------|
+| **BlockingQueue** | High-scale lending: Producer-Consumer pattern for loan processing | Thread-safe, handles backpressure, FIFO order |
+| **BitSet** | Transaction flags: Mark 10M transactions (approved/declined/pending) | 8x memory savings vs boolean[], O(1) operations |
+| **ConcurrentSkipListMap** | Real-time order book (price → quantity) | Thread-safe sorted map, concurrent reads/writes |
+| **TreeMap** | Stock price history (timestamp → price) | Sorted by time, range queries (get prices between T1 and T2) |
+| **ConcurrentHashMap** | Account balance cache (accountId → balance) | High concurrency, lock-free reads |
+| **PriorityQueue** | Loan applications sorted by credit score | Process high-credit applicants first |
+| **Deque** | Undo/Redo in trading platform | O(1) add/remove from both ends |
+| **Segment Tree** | Portfolio analytics: Sum of holdings in range | O(log n) range sum queries |
+
+---
+
+## 🎯 Quick Interview Prep Summary
+
+### Must-Know Trade-Offs
+
+**AVL vs Red-Black:**
+- AVL: More lookups → Choose AVL
+- Red-Black: More updates → Choose RB (Java's choice)
+
+**HashMap vs TreeMap:**
+- HashMap: Unordered, O(1) ops
+- TreeMap: Sorted, O(log n) ops, range queries
+
+**ArrayList vs LinkedList:**
+- ArrayList: Random access O(1), good cache locality
+- LinkedList: Insert/delete at ends O(1), poor cache
+
+**BlockingQueue vs Regular Queue:**
+- BlockingQueue: Thread-safe, handles backpressure
+- Regular Queue: Single-threaded, faster
+
+**Skip List vs BST:**
+- Skip List: Better for concurrent access
+- BST: Better for single-threaded, deterministic
+
+### Common Interview Mistakes to Avoid
+
+❌ Saying "HashMap is always O(1)"
+- ✅ Correct: "O(1) average, O(n) worst case, O(log n) after treeification"
+
+❌ Using ArrayList for frequent middle insertions
+- ✅ Use LinkedList or ArrayDeque
+
+❌ Not mentioning thread-safety when asked about concurrency
+- ✅ Discuss ConcurrentHashMap, CopyOnWriteArrayList, BlockingQueue
+
+❌ Implementing your own LinkedList when Deque exists
+- ✅ Use ArrayDeque (faster, less memory)
+
+❌ Forgetting about BitSet for boolean flags
+- ✅ Mention memory savings for large boolean arrays
+
+### Interview Framework (REACTO)
+
+1. **Repeat** the question
+2. **Examples** - walk through cases
+3. **Approach** - explain your solution
+4. **Code** - implement clearly
+5. **Test** - walk through test cases
+6. **Optimize** - discuss trade-offs
+
+---
+
 ## �🎓 LeetCode Problem Mapping
 
 ### Priority Problems by Plan
