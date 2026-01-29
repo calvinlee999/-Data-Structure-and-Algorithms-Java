@@ -550,26 +550,629 @@ Max Heap:
 | **Max Heap** | `maxHeap/` | Insert: O(log n) | O(n) |
 | **Priority Queue** | `PriorityQueue/` | Insert: O(log n) | O(n) |
 
-### 🕐 Understanding Time Complexity (Big O)
+---
 
-**Think of it as "How much slower does it get when you add more items?"**
+## 🕐 Big O Notation - The Complete Beginner's Guide
 
-- **O(1)** = "Constant" - Always the same speed! 🚀
-  - Example: Getting item from array by index
-  
-- **O(log n)** = "Logarithmic" - Gets slower, but not by much 😊
-  - Example: Binary search (like finding a word in a dictionary)
-  
-- **O(n)** = "Linear" - Double the items = double the time 📈
-  - Example: Looking through a list one by one
-  
-- **O(n log n)** = "Linearithmic" - Faster than O(n²), slower than O(n) ⚡
-  - Example: Good sorting algorithms (Merge Sort, Quick Sort)
-  
-- **O(n²)** = "Quadratic" - Gets SLOW with lots of items! 🐌
-  - Example: Bubble Sort, Insertion Sort (for large lists)
+### What is Big O? (The Simple Answer)
+
+Big O is like a **speedometer for your code** 🚗💨. It tells you:
+- **How slow will my program get** when I give it more data?
+- **Should I use this algorithm** for 10 items? 1,000 items? 1,000,000 items?
+
+**Think of it this way:** If you're organizing 5 books, any method works. But if you're organizing 5,000 books, you need a smart method!
+
+---
+
+### The Big O Scale (From Fastest to Slowest)
+
+```
+🚀 O(1)        ← SUPER FAST! Always same speed
+😊 O(log n)    ← Very fast! Barely slows down
+📈 O(n)        ← Pretty good. Doubles when data doubles
+⚡ O(n log n)  ← Good for sorting
+😰 O(n²)       ← Gets slow with lots of data
+💀 O(2^n)      ← SUPER SLOW! Avoid if possible!
+```
+
+**The Golden Rule:** Lower is better! Pick algorithms with lower Big O when possible.
+
+---
+
+### 🚀 O(1) - Constant Time: "The Flash"
+
+**What it means:** Always takes the same amount of time, no matter how much data you have!
+
+**Real-life examples:**
+- Opening your locker (always takes the same time whether school has 100 or 1,000 students)
+- Turning on a light switch
+- Looking at the first item in a list
+
+**Code examples:**
+
+```java
+// Example 1: Get first item from array
+int[] numbers = {10, 20, 30, 40, 50};
+int first = numbers[0];  // ← O(1) - Instant!
+
+// Example 2: Add to end of ArrayList (usually)
+ArrayList<Integer> list = new ArrayList<>();
+list.add(100);  // ← O(1) - Instant!
+
+// Example 3: Check HashMap
+HashMap<String, Integer> ages = new HashMap<>();
+ages.put("Alice", 15);
+int aliceAge = ages.get("Alice");  // ← O(1) - Instant lookup!
+```
+
+**Visual - Array Access:**
+```
+Array: [10, 20, 30, 40, 50]
+Index:   0   1   2   3   4
+
+Get numbers[3] → Go directly to position 3 → 40 ✅
+(Doesn't matter if array has 5 or 5,000 items!)
+```
+
+**Why it's O(1):**
+- Computer knows exactly where to look
+- Like having GPS coordinates - go straight there!
+
+**Where you see it:**
+- Array access: `arr[5]`
+- Stack push/pop
+- Queue enqueue/dequeue
+- HashMap get/put
+
+---
+
+### 😊 O(log n) - Logarithmic Time: "The Dictionary Search"
+
+**What it means:** Each step cuts the problem in HALF! Gets slower as data grows, but very slowly.
+
+**Real-life examples:**
+- Finding a word in a dictionary (flip to middle, then middle of that half, etc.)
+- Guessing a number 1-100 (use binary search: too high? try lower half)
+- Phone book search
+
+**The Magic of Log:**
+- 10 items → ~3 steps
+- 100 items → ~7 steps  
+- 1,000 items → ~10 steps
+- 1,000,000 items → ~20 steps! 🤯
+
+**Code example - Binary Search:**
+
+```java
+// Find 7 in sorted array [1, 2, 3, 4, 5, 6, 7, 8, 9]
+public int binarySearch(int[] arr, int target) {
+    int left = 0, right = arr.length - 1;
+    
+    while (left <= right) {
+        int mid = (left + right) / 2;  // Check middle
+        
+        if (arr[mid] == target) return mid;  // Found it! ✅
+        if (arr[mid] < target) left = mid + 1;  // Go right half
+        else right = mid - 1;  // Go left half
+    }
+    return -1;  // Not found
+}
+```
+
+**Visual - Binary Search:**
+```
+Find 7 in: [1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+Step 1: Check middle (5)
+        [1, 2, 3, 4, 5] | [6, 7, 8, 9]
+        7 > 5, so go right half →
+
+Step 2: Check middle of right half (7)
+        [6, 7, 8, 9]
+        Found 7! ✅
+
+Only 2 steps for 9 items!
+```
+
+**Where you see it:**
+- Binary Search (on sorted arrays)
+- Binary Search Trees (balanced)
+- Finding elements in heaps
+- Many "divide and conquer" algorithms
+
+**Code location:** `binarySearch/`
+
+---
+
+### 📈 O(n) - Linear Time: "The Line Walker"
+
+**What it means:** Time grows proportionally with data. 2x data = 2x time.
+
+**Real-life examples:**
+- Reading every name in a class roster
+- Counting all the money in your piggy bank
+- High-fiving everyone in a line
+
+**Code examples:**
+
+```java
+// Example 1: Find max in array
+public int findMax(int[] numbers) {
+    int max = numbers[0];
+    for (int i = 1; i < numbers.length; i++) {  // Visit each item once
+        if (numbers[i] > max) {
+            max = numbers[i];
+        }
+    }
+    return max;
+}
+// 10 items = 10 checks
+// 100 items = 100 checks
+// 1,000 items = 1,000 checks
+
+// Example 2: Print all items
+public void printAll(String[] names) {
+    for (String name : names) {  // O(n) - visit each once
+        System.out.println(name);
+    }
+}
+
+// Example 3: Sum all numbers
+public int sum(int[] nums) {
+    int total = 0;
+    for (int num : nums) {  // O(n) - go through each
+        total += num;
+    }
+    return total;
+}
+```
+
+**Visual:**
+```
+Array: [3, 1, 4, 1, 5, 9, 2, 6]
+        ↓  ↓  ↓  ↓  ↓  ↓  ↓  ↓
+Check: 1st 2nd 3rd 4th 5th 6th 7th 8th
+
+8 items = 8 steps
+100 items = 100 steps
+```
+
+**Growth chart:**
+```
+Items  | Steps
+-------|-------
+10     | 10
+100    | 100
+1,000  | 1,000
+10,000 | 10,000
+```
+
+**Where you see it:**
+- Linear Search
+- Traversing an array/list
+- Finding sum/average
+- LinkedList traversal
+
+**Code locations:** Many places in `Sort/`, `LinkedList/`
+
+---
+
+### ⚡ O(n log n) - Linearithmic Time: "The Smart Sorter"
+
+**What it means:** Better than O(n²) but slower than O(n). The "sweet spot" for sorting!
+
+**Real-life example:**
+- Organizing a deck of cards using Merge Sort
+- Tournament brackets (sort by skill, then pair them up)
+
+**Why it's called "n log n":**
+- Divide data into halves (log n)
+- Process each piece (n)
+- Combine: n × log n
+
+**Code example - Merge Sort:**
+
+```java
+public void mergeSort(int[] arr, int left, int right) {
+    if (left < right) {
+        int mid = (left + right) / 2;
+        
+        mergeSort(arr, left, mid);      // Sort left half
+        mergeSort(arr, mid + 1, right); // Sort right half
+        merge(arr, left, mid, right);   // Merge them
+    }
+}
+// Dividing: log n steps (split in half each time)
+// Merging: n work (look at each item)
+// Total: O(n log n)
+```
+
+**Visual - Merge Sort:**
+```
+[5, 2, 8, 1, 9, 3]
+       ↓ Split
+[5, 2, 8] [1, 9, 3]
+    ↓ Split more
+[5] [2, 8] [1] [9, 3]
+    ↓ Split more
+[5] [2] [8] [1] [9] [3]
+    ↓ Merge (compare and combine)
+[2, 5, 8] [1, 3, 9]
+    ↓ Merge
+[1, 2, 3, 5, 8, 9] ✅
+```
+
+**Growth chart:**
+```
+Items  | Steps (approx)
+-------|----------------
+10     | 33
+100    | 664
+1,000  | 9,966
+10,000 | 132,877
+```
+
+**Where you see it:**
+- Merge Sort
+- Quick Sort (average case)
+- Heap Sort
+- Many efficient sorting algorithms
+
+**Code locations:** `Sort/MergeSort/`, `Sort/QuickSort/`
+
+---
+
+### 😰 O(n²) - Quadratic Time: "The Nested Loop"
+
+**What it means:** Time grows FAST! 2x data = 4x time. 10x data = 100x time!
+
+**Real-life examples:**
+- Comparing every person with every other person (handshakes at a party)
+- Checking every seat pair in a classroom
+
+**Code examples:**
+
+```java
+// Example 1: Bubble Sort
+public void bubbleSort(int[] arr) {
+    for (int i = 0; i < arr.length; i++) {        // Outer loop: n times
+        for (int j = 0; j < arr.length - 1; j++) { // Inner loop: n times
+            if (arr[j] > arr[j + 1]) {
+                // Swap
+                int temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+            }
+        }
+    }
+}
+// n × n = n² operations!
+
+// Example 2: Find duplicates (naive way)
+public boolean hasDuplicate(int[] arr) {
+    for (int i = 0; i < arr.length; i++) {        // Outer: n
+        for (int j = i + 1; j < arr.length; j++) { // Inner: n
+            if (arr[i] == arr[j]) return true;
+        }
+    }
+    return false;
+}
+
+// Example 3: Print all pairs
+public void printPairs(int[] arr) {
+    for (int i = 0; i < arr.length; i++) {        // n times
+        for (int j = 0; j < arr.length; j++) {     // n times
+            System.out.println(arr[i] + ", " + arr[j]);
+        }
+    }
+}
+// Total: n × n = n² prints
+```
+
+**Visual - Nested Loops:**
+```
+Array: [1, 2, 3]
+
+Compare:
+1 with 1, 1 with 2, 1 with 3
+2 with 1, 2 with 2, 2 with 3
+3 with 1, 3 with 2, 3 with 3
+
+3 items = 3 × 3 = 9 comparisons
+10 items = 10 × 10 = 100 comparisons!
+```
+
+**Growth chart (Notice how FAST it grows!):**
+```
+Items  | Steps
+-------|--------
+10     | 100
+100    | 10,000
+1,000  | 1,000,000! 😱
+10,000 | 100,000,000! 💀
+```
+
+**Where you see it:**
+- Bubble Sort
+- Insertion Sort
+- Selection Sort
+- Nested loops comparing all pairs
+
+**Code locations:** `Sort/BubbleSort/`, `Sort/InsertionSort/`, `Sort/SelectionSort/`
+
+**Warning:** Use only for small datasets (< 1,000 items)!
+
+---
+
+### 💀 O(2^n) - Exponential Time: "The Nightmare"
+
+**What it means:** DOUBLES for each new item! Extremely slow!
+
+**Real-life example:**
+- Trying every possible password combination
+- Chess: considering every possible move, then every response, then...
+
+**Growth chart (See why it's terrible?):**
+```
+Items | Steps
+------|--------
+5     | 32
+10    | 1,024
+20    | 1,048,576
+30    | 1,073,741,824! (over 1 BILLION!)
+```
+
+**Code example - Fibonacci (bad way):**
+```java
+public int fibonacci(int n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);  // O(2^n) - Very slow!
+}
+```
+
+**Where you see it:**
+- Recursive Fibonacci (without memoization)
+- Generating all subsets
+- Brute force solutions
+
+**Avoid this when possible!** Usually there's a better way.
+
+---
+
+## 📊 Big O Comparison Chart
+
+### Visual Speed Comparison
+
+```
+Number of items (n) →
+
+Speed ↓     | 10    | 100   | 1,000  | 10,000
+------------|-------|-------|--------|--------
+O(1)        | 1     | 1     | 1      | 1      🚀
+O(log n)    | 3     | 7     | 10     | 13     😊
+O(n)        | 10    | 100   | 1,000  | 10,000 📈
+O(n log n)  | 33    | 664   | 9,966  | 132K   ⚡
+O(n²)       | 100   | 10K   | 1M     | 100M   😰
+O(2^n)      | 1K    | ...   | ...    | ...    💀
+```
+
+### Real-World Time Example
+
+Let's say each operation takes 1 microsecond (1 millionth of a second):
+
+**For 1,000 items:**
+- O(1): **0.001 ms** - Instant! ✅
+- O(log n): **0.01 ms** - Still instant! ✅
+- O(n): **1 ms** - Very fast! ✅
+- O(n log n): **10 ms** - Fast! ✅
+- O(n²): **1 second** - Noticeable ⚠️
+- O(2^n): **Never finishes** - Don't even try! ❌
+
+**For 1,000,000 items:**
+- O(1): **0.001 ms** - Instant! ✅
+- O(log n): **0.02 ms** - Still instant! ✅
+- O(n): **1 second** - Fine ✅
+- O(n log n): **20 seconds** - Okay ✅
+- O(n²): **11.5 DAYS** - Nope! ❌
+- O(2^n): **Heat death of universe** - 💀
+
+---
+
+## 🎯 How to Calculate Big O (Simple Rules)
+
+### Rule 1: Drop Constants
+
+```java
+// This:
+for (int i = 0; i < n; i++) {
+    System.out.println(i);
+}
+// Is still O(n), NOT O(2n) or O(n + 5)
+```
+
+**Why?** Big O cares about growth, not exact numbers.
+
+### Rule 2: Drop Smaller Terms
+
+```java
+// This code:
+for (int i = 0; i < n; i++) {      // O(n)
+    System.out.println(i);
+}
+for (int i = 0; i < n; i++) {      // O(n)
+    for (int j = 0; j < n; j++) {   // O(n²)
+        System.out.println(i + j);
+    }
+}
+// Total: O(n + n²) → Simplify to O(n²)
+// (n² grows way faster, so n doesn't matter)
+```
+
+### Rule 3: Different Inputs = Different Variables
+
+```java
+for (int i = 0; i < a.length; i++) {     // O(a)
+    System.out.println(a[i]);
+}
+for (int j = 0; j < b.length; j++) {     // O(b)
+    System.out.println(b[j]);
+}
+// Total: O(a + b), NOT O(n)!
+```
+
+### Rule 4: Nested Loops = Multiply
+
+```java
+for (int i = 0; i < n; i++) {      // O(n)
+    for (int j = 0; j < n; j++) {   // O(n)
+        // ...
+    }
+}
+// Total: O(n × n) = O(n²)
+```
+
+---
+
+## 🎓 Practice: Guess the Big O!
+
+### Exercise 1
+```java
+public int getFirst(int[] arr) {
+    return arr[0];
+}
+```
+**Answer:** O(1) - Direct access!
+
+### Exercise 2
+```java
+public void printAll(int[] arr) {
+    for (int num : arr) {
+        System.out.println(num);
+    }
+}
+```
+**Answer:** O(n) - Visit each item once!
+
+### Exercise 3
+```java
+public void printPairs(int[] arr) {
+    for (int i = 0; i < arr.length; i++) {
+        for (int j = 0; j < arr.length; j++) {
+            System.out.println(arr[i] + "," + arr[j]);
+        }
+    }
+}
+```
+**Answer:** O(n²) - Nested loops!
+
+### Exercise 4
+```java
+public int binarySearch(int[] arr, int target) {
+    int left = 0, right = arr.length - 1;
+    while (left <= right) {
+        int mid = (left + right) / 2;
+        if (arr[mid] == target) return mid;
+        if (arr[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+    return -1;
+}
+```
+**Answer:** O(log n) - Divide and conquer!
+
+---
+
+## 📚 Big O for Each Data Structure
+
+### Arrays
+- **Access:** O(1) - Use index to jump directly
+- **Search:** O(n) - Might need to check all items
+- **Insert (end):** O(1) - Add to end
+- **Insert (middle):** O(n) - Shift everything over
+- **Delete:** O(n) - Shift everything over
+
+### LinkedList
+- **Access:** O(n) - Follow the chain
+- **Search:** O(n) - Follow the chain
+- **Insert (beginning):** O(1) - Just change pointers!
+- **Insert (end):** O(n) - Must walk to end (unless you keep tail pointer)
+- **Delete:** O(n) - Find it first, then O(1) to delete
+
+### Stack
+- **Push:** O(1) - Add to top
+- **Pop:** O(1) - Remove from top
+- **Peek:** O(1) - Look at top
+
+### Queue
+- **Enqueue:** O(1) - Add to back
+- **Dequeue:** O(1) - Remove from front
+- **Peek:** O(1) - Look at front
+
+### Hash Table
+- **Insert:** O(1) average - Direct placement!
+- **Search:** O(1) average - Direct lookup!
+- **Delete:** O(1) average - Direct removal!
+- **Worst case:** O(n) - If many collisions
+
+### Binary Search Tree (Balanced)
+- **Insert:** O(log n) - Navigate down tree
+- **Search:** O(log n) - Navigate down tree
+- **Delete:** O(log n) - Navigate down tree
+- **Worst case (unbalanced):** O(n) - Becomes a linked list!
+
+### Heap
+- **Insert:** O(log n) - Bubble up
+- **Delete Max/Min:** O(log n) - Bubble down
+- **Get Max/Min:** O(1) - It's at the top!
+
+---
+
+## 🎯 Choosing the Right Data Structure
+
+**Need fast access by index?**
+→ Use **Array** (O(1) access)
+
+**Need to add/remove from beginning a lot?**
+→ Use **LinkedList** (O(1) insert/delete at start)
+
+**Need fast lookups by key?**
+→ Use **HashMap** (O(1) lookup)
+
+**Need to keep things sorted?**
+→ Use **Binary Search Tree** (O(log n) operations)
+
+**Need to always get min/max quickly?**
+→ Use **Heap** (O(1) to peek, O(log n) to remove)
+
+**Need LIFO (Last In, First Out)?**
+→ Use **Stack** (O(1) push/pop)
+
+**Need FIFO (First In, First Out)?**
+→ Use **Queue** (O(1) enqueue/dequeue)
+
+---
+
+## 💡 Quick Tips for Interviews
+
+1. **Always state the Big O** after explaining your solution
+2. **Explain trade-offs**: "This is O(n) time but O(1) space"
+3. **Know common complexities**: Sorting is usually O(n log n), Hash lookups are O(1)
+4. **Watch for hidden loops**: `.contains()`, `.indexOf()` are O(n) operations!
+5. **Space complexity matters too!** Recursion uses O(n) space on the call stack
+
+---
+
+### 🕐 Understanding Time Complexity (Big O) - Quick Reference
 
 **Rule of thumb:** Smaller is faster! O(1) < O(log n) < O(n) < O(n log n) < O(n²)
+
+**Common Complexities:**
+- **O(1)** = "Constant" - Always the same speed! 🚀
+- **O(log n)** = "Logarithmic" - Gets slower, but not by much 😊  
+- **O(n)** = "Linear" - Double the items = double the time 📈
+- **O(n log n)** = "Linearithmic" - Faster than O(n²), slower than O(n) ⚡
+- **O(n²)** = "Quadratic" - Gets SLOW with lots of items! 🐌
+- **O(2^n)** = "Exponential" - AVOID! 💀
 
 ---
 
