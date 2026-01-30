@@ -1,0 +1,7 @@
+
+# Metals (Scala IDE) files
+.metals/
+metals.sbt
+.bloop/
+.bsp/
+project/metals.sbt
