@@ -1407,20 +1407,51 @@ Before your interview:
 
 ## 📚 Java Collections Cheat Sheet
 
-| Interface | Implementation | Ordered? | Sorted? | Thread-Safe? | Null? | Time (avg) |
-|-----------|---------------|----------|---------|--------------|-------|------------|
-| List | ArrayList | Yes | No | No | Yes | O(1) get, O(n) add/remove |
-| List | LinkedList | Yes | No | No | Yes | O(n) get, O(1) add/remove |
-| List | Vector | Yes | No | Yes (sync) | Yes | O(1) get (slow) |
-| Set | HashSet | No | No | No | One null | O(1) |
-| Set | LinkedHashSet | Insertion | No | No | One null | O(1) |
-| Set | TreeSet | No | Yes | No | No | O(log n) |
-| Map | HashMap | No | No | No | One null key | O(1) |
-| Map | LinkedHashMap | Insertion | No | No | One null key | O(1) |
-| Map | TreeMap | No | By key | No | No | O(log n) |
-| Map | ConcurrentHashMap | No | No | Yes | No | O(1) |
-| Queue | ArrayDeque | FIFO | No | No | No | O(1) |
-| Queue | PriorityQueue | No | Min-heap | No | No | O(log n) |
+### Complete Performance Reference
+
+| Interface | Implementation | Space Complexity | Read/Contains (Best/Avg/Worst) | Add (Best/Avg/Worst) | Remove (Best/Avg/Worst) |
+|-----------|---------------|------------------|--------------------------------|---------------------|------------------------|
+| **List** | **ArrayList** | O(n) | O(1) / O(1) / O(1) `get(i)` | O(1) / O(1)* / O(n) `add(e)` | O(1) / O(n) / O(n) `remove(i)` |
+| | | | O(1) / O(n) / O(n) `contains(e)` | O(1) / O(n) / O(n) `add(i,e)` | O(1) / O(n) / O(n) `remove(e)` |
+| **List** | **LinkedList** | O(n) | O(1) / O(n) / O(n) `get(i)` | O(1) / O(1) / O(1) `add(e)` | O(1) / O(n) / O(n) `remove(i)` |
+| | | | O(1) / O(n) / O(n) `contains(e)` | O(1) / O(1) / O(1) `addFirst/Last` | O(1) / O(1) / O(1) `removeFirst/Last` |
+| **List** | **Vector** | O(n) | O(1) / O(1) / O(1) `get(i)` | O(1) / O(1)* / O(n) `add(e)` | O(1) / O(n) / O(n) `remove(i)` |
+| | | | O(1) / O(n) / O(n) `contains(e)` | O(1) / O(n) / O(n) `add(i,e)` | O(1) / O(n) / O(n) `remove(e)` |
+| **Set** | **HashSet** | O(n) | O(1) / O(1) / O(n) `contains(e)` | O(1) / O(1) / O(n) `add(e)` | O(1) / O(1) / O(n) `remove(e)` |
+| **Set** | **LinkedHashSet** | O(n) | O(1) / O(1) / O(n) `contains(e)` | O(1) / O(1) / O(n) `add(e)` | O(1) / O(1) / O(n) `remove(e)` |
+| **Set** | **TreeSet** | O(n) | O(log n) / O(log n) / O(log n) `contains(e)` | O(log n) / O(log n) / O(log n) `add(e)` | O(log n) / O(log n) / O(log n) `remove(e)` |
+| **Map** | **HashMap** | O(n) | O(1) / O(1) / O(n) `get(k)` | O(1) / O(1) / O(n) `put(k,v)` | O(1) / O(1) / O(n) `remove(k)` |
+| | | | O(1) / O(1) / O(n) `containsKey(k)` | | |
+| **Map** | **LinkedHashMap** | O(n) | O(1) / O(1) / O(n) `get(k)` | O(1) / O(1) / O(n) `put(k,v)` | O(1) / O(1) / O(n) `remove(k)` |
+| | | | O(1) / O(1) / O(n) `containsKey(k)` | | |
+| **Map** | **TreeMap** | O(n) | O(log n) / O(log n) / O(log n) `get(k)` | O(log n) / O(log n) / O(log n) `put(k,v)` | O(log n) / O(log n) / O(log n) `remove(k)` |
+| | | | O(log n) / O(log n) / O(log n) `containsKey(k)` | | |
+| **Map** | **ConcurrentHashMap** | O(n) | O(1) / O(1) / O(n) `get(k)` | O(1) / O(1) / O(n) `put(k,v)` | O(1) / O(1) / O(n) `remove(k)` |
+| **Queue** | **ArrayDeque** | O(n) | O(1) / O(n) / O(n) `contains(e)` | O(1) / O(1)* / O(n) `offer(e)` | O(1) / O(1) / O(1) `poll()` |
+| **Queue** | **PriorityQueue** | O(n) | O(1) / O(n) / O(n) `contains(e)` | O(log n) / O(log n) / O(log n) `offer(e)` | O(log n) / O(log n) / O(log n) `poll()` |
+| | | | O(1) / O(1) / O(1) `peek()` | | O(n) / O(n) / O(n) `remove(e)` |
+
+**Notes:**
+- **\*** Amortized O(1) - occasional resize causes O(n)
+- **Worst case O(n)** for HashMap/HashSet occurs with hash collisions (rare with good hash function)
+- **TreeSet/TreeMap** guarantee O(log n) for all operations (balanced Red-Black tree)
+- **LinkedList** add/remove at ends is O(1), but O(n) at arbitrary position
+- **Space Complexity** is O(n) for all collections where n = number of elements
+
+### Quick Selection Guide
+
+| Use Case | Best Choice | Why |
+|----------|-------------|-----|
+| Random access by index | `ArrayList` | O(1) get(i) |
+| Frequent add/remove at ends | `LinkedList` or `ArrayDeque` | O(1) operations |
+| Unique elements, fast lookup | `HashSet` | O(1) average case |
+| Unique elements, sorted order | `TreeSet` | O(log n), maintains order |
+| Key-value pairs, fast lookup | `HashMap` | O(1) average case |
+| Key-value pairs, sorted by key | `TreeMap` | O(log n), sorted iteration |
+| Thread-safe map | `ConcurrentHashMap` | Lock-free reads |
+| Priority-based processing | `PriorityQueue` | O(log n) insert/remove min |
+| FIFO queue | `ArrayDeque` | O(1) both ends |
+| Maintain insertion order | `LinkedHashMap` or `LinkedHashSet` | O(1) + order preservation |
 
 ---
 
