@@ -1,5 +1,15 @@
 package com.company.hashtable;
 
+/**
+ * EMPLOYEE CLASS - Data Object for Chaining Example
+ * ==================================================
+ * 
+ * Same as the Employee class in the linear probing example.
+ * Represents an employee with first name, last name, and ID.
+ * Used as the VALUE in our chained hash table.
+ * 
+ * See hashtable/Employee.java for detailed documentation.
+ */
 public class Employee {
 
     private String firstName;

@@ -1,5 +1,28 @@
 package academy.learnprogramming.challenge1;
 
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * EMPLOYEE CLASS - The Data We're Storing
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * PURPOSE:
+ * --------
+ * This is a simple class representing an employee with basic information.
+ * It's the "cargo" that each node in our linked list carries.
+ * 
+ * IMPORTANT METHOD: equals()
+ * --------------------------
+ * The equals() method is CRUCIAL for our challenge because we need to
+ * COMPARE employees to find the right one to insert before.
+ * 
+ * Two employees are considered "equal" if they have:
+ * - Same ID
+ * - Same first name
+ * - Same last name
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
 public class Employee {
 
     private String firstName;

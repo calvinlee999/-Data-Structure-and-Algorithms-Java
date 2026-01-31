@@ -1,5 +1,43 @@
 package academy.learnprogramming.hashtableschallenge;
 
+/*
+ * ═══════════════════════════════════════════════════════════════════════════
+ * EMPLOYEE CLASS - For Hashtable Challenges
+ * ═══════════════════════════════════════════════════════════════════════════
+ * 
+ * PURPOSE:
+ * --------
+ * This class represents an employee and demonstrates important concepts
+ * for working with hashtables and HashMaps.
+ * 
+ * IMPORTANT METHODS FOR HASHTABLES:
+ * ---------------------------------
+ * 
+ * 1. hashCode():
+ *    - Generates a hash value for this employee
+ *    - Used by HashMap/HashSet to determine which "bucket" to use
+ *    - MUST be consistent with equals() method!
+ *    
+ * 2. equals():
+ *    - Determines if two employees are "the same"
+ *    - Used to handle collisions (when two objects have same hash)
+ *    - If equals() returns true, hashCode() MUST return same value
+ *    
+ * WHY ARE BOTH NEEDED?
+ * -------------------
+ * - hashCode() is fast but can have collisions (different objects, same hash)
+ * - equals() is the final check to see if objects are really equal
+ * - Together they make HashMap work correctly and efficiently
+ * 
+ * CONTRACT BETWEEN hashCode() AND equals():
+ * ----------------------------------------
+ * 1. If a.equals(b) is true, then a.hashCode() == b.hashCode()
+ * 2. If a.hashCode() == b.hashCode(), a.equals(b) might be true or false
+ * 3. If a.equals(b) is false, hashCode can be same or different
+ * 
+ * ═══════════════════════════════════════════════════════════════════════════
+ */
+
 public class Employee {
 
     private String firstName;
