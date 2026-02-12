@@ -255,6 +255,101 @@ java com.company.Main
 - [ ] [Best Time to Buy and Sell Stock](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/)
 - [ ] [Contains Duplicate](https://leetcode.com/problems/contains-duplicate/)
 
+#### 💻 Java Solutions (Practice These!)
+
+**Problem 1: Two Sum**
+```java
+// Time: O(n), Space: O(n)
+public class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        // HashMap stores: value -> index
+        Map<Integer, Integer> seen = new HashMap<>();
+        
+        for (int i = 0; i < nums.length; i++) {
+            int complement = target - nums[i];
+            
+            // Check if complement exists
+            if (seen.containsKey(complement)) {
+                return new int[]{seen.get(complement), i};
+            }
+            
+            // Store current number and its index
+            seen.put(nums[i], i);
+        }
+        
+        return new int[]{}; // No solution found
+    }
+}
+
+// Example:
+// Input: nums = [2, 7, 11, 15], target = 9
+// Output: [0, 1]
+// Explanation: nums[0] + nums[1] = 2 + 7 = 9
+```
+
+**Problem 2: Best Time to Buy and Sell Stock**
+```java
+// Time: O(n), Space: O(1)
+public class Solution {
+    public int maxProfit(int[] prices) {
+        if (prices == null || prices.length == 0) {
+            return 0;
+        }
+        
+        int minPrice = Integer.MAX_VALUE;
+        int maxProfit = 0;
+        
+        for (int price : prices) {
+            // Update minimum price seen so far
+            if (price < minPrice) {
+                minPrice = price;
+            }
+            // Calculate profit if we sell at current price
+            else if (price - minPrice > maxProfit) {
+                maxProfit = price - minPrice;
+            }
+        }
+        
+        return maxProfit;
+    }
+}
+
+// Example:
+// Input: prices = [7, 1, 5, 3, 6, 4]
+// Output: 5
+// Explanation: Buy on day 2 (price = 1), sell on day 5 (price = 6), profit = 5
+```
+
+**Problem 3: Contains Duplicate**
+```java
+// Time: O(n), Space: O(n)
+public class Solution {
+    public boolean containsDuplicate(int[] nums) {
+        // HashSet for O(1) lookup
+        Set<Integer> seen = new HashSet<>();
+        
+        for (int num : nums) {
+            // If add() returns false, element already exists
+            if (!seen.add(num)) {
+                return true; // Duplicate found
+            }
+        }
+        
+        return false; // No duplicates
+    }
+}
+
+// Example:
+// Input: nums = [1, 2, 3, 1]
+// Output: true
+// Explanation: Element 1 appears twice
+```
+
+**🎯 Key Takeaways:**
+- **Two Sum**: HashMap for O(1) complement lookup
+- **Best Time to Buy and Sell Stock**: Track minimum price + maximum profit
+- **Contains Duplicate**: HashSet's `add()` returns false if duplicate
+
 **✅ Checkpoint**: Solve Two Sum using HashMap in O(n)
 
 **Estimated Time**: 4 hours (2h learning, 2h practice)

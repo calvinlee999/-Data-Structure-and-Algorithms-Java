@@ -1,5 +1,7 @@
 package com.company;
 
+import java.util.List;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -27,6 +29,20 @@ public class Main {
             }
         }
         System.out.println("7 is in the index = "+ index);
+
+        // ArrayList<Integer> intArrayList = new ArrayList<>();
+        List<Integer> intArrayList = List.of(20,35,-15,7,55,1,-22);
+        // Finding the index of 7 in the array list
+        // 1. Using a for loop  
+        for (int i=0;i<intArrayList.size();i++){
+            if (intArrayList.get(i)==7){
+                index =i;
+                break;
+            }
+        }
+        System.out.println("7 is in the index = "+ index);  
+
+
 
     }
 }
