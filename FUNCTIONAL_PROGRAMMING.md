@@ -14,11 +14,158 @@ Modern Java has evolved from a strictly imperative language (telling the compute
 Functional programming in Java stands on a three-legged stool: functional interfaces, lambda expressions, and the Stream API.
 
 ### 1. Functional interfaces: The blueprint
-A functional interface is any interface with exactly one abstract method. It acts as the type for a function.
-- `Predicate<T>`: Takes an input, returns a boolean (e.g., is this transaction valid?)
-- `Function<T, R>`: Takes type `T`, returns type `R` (e.g., convert currency to USD)
-- `Consumer<T>`: Takes input, returns nothing (e.g., log this event)
-- `Supplier<T>`: Takes nothing, returns a value (e.g., generate a UUID)
+
+#### What is a Functional Interface?
+A **functional interface** is an interface that contains exactly one abstract method. Think of it as a contract that says: _"I will do one job, and here's what that job looks like."_
+
+**Key Characteristics:**
+- **Single Abstract Method (SAM):** One and only one abstract method. It can have default methods and static methods too.
+- **@FunctionalInterface Annotation:** Optional but recommended. Tells the compiler to enforce the one-method rule.
+- **Enables Lambdas:** When you have a functional interface, you can use lambda expressions (compact code) instead of clunky anonymous classes.
+
+```java
+// Example: A simple functional interface
+@FunctionalInterface
+public interface IsEven {
+    // This is the ONE abstract method
+    boolean check(int number);
+}
+
+// Old way (before Java 8): verbose anonymous class
+IsEven isEven = new IsEven() {
+    @Override
+    public boolean check(int number) {
+        return number % 2 == 0;
+    }
+};
+
+// New way (Java 8+): clean lambda expression
+IsEven isEven = n -> n % 2 == 0;
+
+// Use it
+System.out.println(isEven.check(4));  // true
+System.out.println(isEven.check(5));  // false
+```
+
+#### The Built-in Functional Interfaces
+
+Java provides a toolbox of standard functional interfaces in the `java.util.function` package. These were introduced in Java 8 and have remained stable through Java 21. Here are the four primary types:
+
+| Interface | Purpose | Abstract Method | Real-world analogy | Example |
+| --- | --- | --- | --- | --- |
+| `Predicate<T>` | Ask a yes/no question | `boolean test(T t)` | A security guard checking IDs | `n -> n > 100` (is this amount large?) |
+| `Consumer<T>` | Do something with a value (side effect) | `void accept(T t)` | A printer printing a page | `System.out::println` (print the value) |
+| `Supplier<T>` | Generate or provide a value | `T get()` | A factory producing items | `() -> new Random().nextInt()` (give me a random number) |
+| `Function<T, R>` | Transform one thing into another | `R apply(T t)` | A currency converter | `currency -> currency * exchangeRate` |
+
+#### Code Examples: The Four Primary Types
+
+**1. Predicate<T> – Testing a condition**
+```java
+import java.util.function.Predicate;
+import java.util.List;
+
+// At 8th grade level: A Predicate is like a quiz question that returns yes/no
+Predicate<Integer> isPositive = n -> n > 0;  // Question: Is this number positive?
+
+System.out.println(isPositive.test(5));   // Output: true (yes, it is!)
+System.out.println(isPositive.test(-3));  // Output: false (no, it's not)
+
+// Real use: Filter a list of transactions for large amounts
+List<Integer> transactions = List.of(10, 50, 100, 20, 200);
+Predicate<Integer> isLarge = amt -> amt > 75;
+
+transactions.stream()
+    .filter(isLarge)  // Keep only the large transactions
+    .forEach(System.out::println);  // Output: 100, 200
+```
+
+**2. Consumer<T> – Do something with a value**
+```java
+import java.util.function.Consumer;
+import java.util.List;
+
+// A Consumer is like giving instructions: "Take this, and do this with it."
+Consumer<String> greet = name -> System.out.println("Hello, " + name + "!");
+
+greet.accept("Alice");  // Output: Hello, Alice!
+greet.accept("Bob");    // Output: Hello, Bob!
+
+// Real use: Log or process each item in a list
+List<String> userNames = List.of("Alice", "Bob", "Charlie");
+Consumer<String> logger = name -> System.out.println("Processing: " + name);
+
+userNames.forEach(logger);  // Output: Processing: Alice (then Bob, then Charlie)
+```
+
+**3. Supplier<T> – Generate or provide a value**
+```java
+import java.util.function.Supplier;
+import java.util.UUID;
+
+// A Supplier is like a magic box: "Give me something from inside without telling me what."
+Supplier<Integer> randomNumber = () -> (int) (Math.random() * 100);
+
+System.out.println(randomNumber.get());  // Output: Random number like 42
+System.out.println(randomNumber.get());  // Output: Different random number like 87
+
+// Real use: Lazy generation of expensive objects
+Supplier<String> sessionId = () -> UUID.randomUUID().toString();
+String id1 = sessionId.get();  // Generate when needed, not before
+String id2 = sessionId.get();  // Each time, a new unique ID
+```
+
+**4. Function<T, R> – Transform one thing into another**
+```java
+import java.util.function.Function;
+import java.util.List;
+import java.util.stream.Collectors;
+
+// A Function is like a recipe: "Give me ingredient T, I'll give you ingredient R."
+Function<Integer, Integer> square = n -> n * n;
+
+System.out.println(square.apply(5));   // Output: 25
+System.out.println(square.apply(10));  // Output: 100
+
+// Real use: Transform a list of prices into a list of discounted prices
+List<Integer> prices = List.of(100, 50, 200);
+Function<Integer, Integer> applyDiscount = price -> (int) (price * 0.9);  // 10% discount
+
+List<Integer> discountedPrices = prices.stream()
+    .map(applyDiscount)  // Transform each price
+    .collect(Collectors.toList());
+// Output: [90, 45, 180]
+```
+
+#### Evolution Across Java Versions
+
+Java's functional programming support has evolved smoothly across versions. The core functional interfaces remain the same, but language features and performance have improved:
+
+| Version | Year | Key Addition | Impact |
+| --- | --- | --- | --- |
+| **Java 8** | 2014 | Introduced `@FunctionalInterface`, lambda expressions, `java.util.function` package | Foundation of functional programming in Java. Changed the language forever. |
+| **Java 9** | 2017 | Enhanced Stream API with new methods like `takeWhile()`, `dropWhile()` | Better stream filtering without custom predicates. |
+| **Java 11** | 2018 | Stable LTE (Long Term Support). Local variable type inference (`var`) | Cleaner lambda code. `var s = () -> "hello"` is now valid. |
+| **Java 17** | 2021 | Stable LTE. Sealed Classes, Records as standard | Better modeling of domain objects. Functional patterns now standard. |
+| **Java 21** | 2023 | Stable LTE. Virtual Threads, Pattern Matching | High-concurrency functional code becomes practical. Lambdas + virtual threads = scalable architecture. |
+
+**Note:** Functional interfaces themselves have stayed constant since Java 8. The improvements are in the surrounding ecosystem and language features that make using them easier and more powerful.
+
+#### Other Common Functional Interfaces
+
+Beyond the four primary types, Java provides specialized interfaces:
+
+| Interface | Method | Purpose |
+| --- | --- | --- |
+| `BiFunction<T, U, R>` | `R apply(T t, U u)` | Function that takes TWO inputs |
+| `UnaryOperator<T>` | `T apply(T t)` | Function where input and output are the SAME type |
+| `BinaryOperator<T>` | `T apply(T t1, T t2)` | Combines TWO values of the SAME type |
+| `Comparator<T>` | `int compare(T o1, T o2)` | Compare two objects (returns negative, 0, or positive) |
+| `Runnable` | `void run()` | Execute code with NO input and NO output |
+| `Callable<V>` | `V call()` | Execute code that RETURNS a value (can throw exceptions) |
+
+**Reference:**  
+See the official [Java 8 Functional Interfaces documentation](https://docs.oracle.com/javase/8/docs/api/java/util/function/package-summary.html) for the complete list.
 
 ### 2. Lambda expressions: The implementation
 Lambdas are anonymous methods that provide a concrete implementation for functional interfaces without the boilerplate of anonymous inner classes.
