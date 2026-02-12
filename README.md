@@ -36,6 +36,7 @@
 10. [Advanced Interview Q&A](#-advanced-interview-questions--answers)
 11. [How Interviewers Grade You](#-how-interviewers-grade-you)
 12. [Production Engineering Notes](#-production-engineering-notes)
+13. [Java Functional Programming](#-java-functional-programming-modern-java-architecture)
 
 ---
 
