@@ -5,9 +5,21 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="789072a3-f116-4a9f-ba96-37687ea6b6d7" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/java-functional-programming/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/DATA_STRUCTURES.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/FUNCTIONAL_PROGRAMMING_ENHANCED.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/PEER_REVIEW_AND_EVALUATION.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README_REORGANIZED.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/fp/combinators/CombinatorPattern.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/fp/interfaces/FunctionalInterfacesGuide.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/fp/lambdas/LambdaExpressions.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/fp/principles/FunctionalPrinciples.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/fp/streams/AdvancedStreamPatterns.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/AdvancedStreamPatterns.java" beforeDir="false" afterPath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/streams/AdvancedStreamPatterns.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/CombinatorPatternDemo.java" beforeDir="false" afterPath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/combinators/CombinatorPatternDemo.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/FunctionalInterfacesDemonstration.java" beforeDir="false" afterPath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/interfaces/FunctionalInterfacesDemonstration.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/FunctionalPrinciples.java" beforeDir="false" afterPath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/interfaces/FunctionalPrinciples.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/LambdaExpressionsMastery.java" beforeDir="false" afterPath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/lambdas/LambdaExpressionsMastery.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
