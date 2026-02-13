@@ -232,11 +232,11 @@ List<Double> highValueAmounts = transactions.stream()
 ### Legacy Examples (Original Implementation)
 These examples demonstrate foundational functional programming concepts:
 
-- **Functional Principles**: [FunctionalPrinciples.java](src/main/java/com/calvin/functional/FunctionalPrinciples.java)
-- **Functional Interfaces**: [FunctionalInterfacesDemonstration.java](src/main/java/com/calvin/functional/FunctionalInterfacesDemonstration.java)
-- **Lambda Expressions**: [LambdaExpressionsMastery.java](src/main/java/com/calvin/functional/LambdaExpressionsMastery.java)
-- **Combinator Pattern**: [CombinatorPatternDemo.java](src/main/java/com/calvin/functional/CombinatorPatternDemo.java)
-- **Advanced Streams**: [AdvancedStreamPatterns.java](src/main/java/com/calvin/functional/AdvancedStreamPatterns.java)
+- **Functional Principles**: [FunctionalPrinciples.java](src/main/java/com/calvin/functional/interfaces/FunctionalPrinciples.java)
+- **Functional Interfaces**: [FunctionalInterfacesDemonstration.java](src/main/java/com/calvin/functional/interfaces/FunctionalInterfacesDemonstration.java)
+- **Lambda Expressions**: [LambdaExpressionsMastery.java](src/main/java/com/calvin/functional/lambdas/LambdaExpressionsMastery.java)
+- **Combinator Pattern**: [CombinatorPatternDemo.java](src/main/java/com/calvin/functional/combinators/CombinatorPatternDemo.java)
+- **Advanced Streams**: [AdvancedStreamPatterns.java](src/main/java/com/calvin/functional/streams/AdvancedStreamPatterns.java)
 
 ### The 5 Strategic Principles
 
