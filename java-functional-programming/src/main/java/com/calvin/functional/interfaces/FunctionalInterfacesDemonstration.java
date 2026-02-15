@@ -221,6 +221,21 @@ public class FunctionalInterfacesDemonstration {
             );
             
             // Sort by amount (descending)
+            // the :: syntax is known as a Method Reference, introduced in Java 8. When see Payment::amount, it is read as:
+            // "The amount method of the Payment class"
+            // It is a shorthand lambda expression used to refer to a method without executing it immediately.
+            // Payment::amount is a functional interface approach that tells the compiler to call the amount() method on an instance
+            // of the Payment class.
+            // Syntax Breakdown: Class::method
+            // Alternative Lambda: payment -> payment.amount()
+            // Common Usage Contexts typically see Payment::amount inside functional operations like map() or forEach() in Streams,
+            // or when creating custom comparators.
+            // Sorting Payments :
+            //    payments.sort(Comparator.comparing(Payment::amount));
+            // Using Map in Streams :
+            //    List<BigDecimal> amounts = payments.stream()
+            //    .map(Payment::amount) // Reads as: "Get amount for each payment"
+            //    .collect(Collectors.toList());
             System.out.println("Sorted by amount (highest first):");
             payments.stream()
                 .sorted(Comparator.comparingDouble(Payment::amount).reversed())
@@ -256,6 +271,15 @@ public class FunctionalInterfacesDemonstration {
             System.out.println("Analogy: Like assigning a task to a worker\n");
             
             // Runnable: No return value
+            // abstract method: void run()
+            // Runnable: This is a core Java interface designed to represent a task that can be executed,
+            // often by a separate thread. It is a functional interface because it has only one abstract method: void run().
+            // processPayment: This is the name of the variable (of type Runnable) to which the lambda expression is assigned.
+            // = () -> ...: This is the syntax for the lambda expression.
+            // () indicates that the run method, as defined by the Runnable interface, takes no arguments.
+            // -> separates the arguments list from the body of the lambda.
+            // This is a comment confirming a key characteristic of the Runnable interface: its run() method does not return a value.
+            // If you need a task to return a result, you would use the Callable interface instead.
             Runnable processPayment = () -> 
                 System.out.println("  Processing payment... (no return)");
             
