@@ -6,7 +6,7 @@
   <component name="ChangeListManager">
     <list default="true" id="789072a3-f116-4a9f-ba96-37687ea6b6d7" name="Default" comment="Move all the functional programming to the proper file structure">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/java-functional-programming/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/java-functional-programming/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/interfaces/FunctionalInterfacesDemonstration.java" beforeDir="false" afterPath="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/interfaces/FunctionalInterfacesDemonstration.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -137,17 +137,17 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "SONARLINT_PRECOMMIT_ANALYSIS": "true",
-    "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/calvinlee/ai_workspace_local/Data-Structure-and-Algorithms-Java"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SONARLINT_PRECOMMIT_ANALYSIS&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/calvinlee/ai_workspace_local/Data-Structure-and-Algorithms-Java&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/java-functional-programming/src/main/java/com/calvin/functional/streams" />
@@ -225,7 +225,15 @@
       <option name="project" value="LOCAL" />
       <updated>1770934157920</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Move all the functional programming to the proper file structure">
+      <option name="closed" value="true" />
+      <created>1771003598598</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1771003598598</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TimeTrackingManager">
