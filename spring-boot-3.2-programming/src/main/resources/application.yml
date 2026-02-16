@@ -1,0 +1,355 @@
+# ========================================
+# Spring Boot Configuration
+# ========================================
+
+# This file uses YAML format for configuration
+# Supports multiple profiles (dev, docker, k8s, prod)
+
+# ========================================
+# COMMON CONFIGURATION (All Profiles)
+# ========================================
+
+spring:
+  application:
+    name: transaction-service
+  
+  # Enable Virtual Threads (Java 21)
+  threads:
+    virtual:
+      enabled: true
+  
+  # Jackson JSON Configuration
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: UTC
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when-authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+# Logging
+logging:
+  level:
+    root: INFO
+    com.calvin.fintech: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# API Documentation (Swagger/OpenAPI)
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+    tags-sorter: alpha
+
+---
+# ========================================
+# DEVELOPMENT PROFILE
+# ========================================
+
+spring:
+  config:
+    activate:
+      on-profile: dev
+  
+  # H2 In-Memory Database
+  datasource:
+    url: jdbc:h2:mem:fintech
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: create-drop  # Recreate schema on startup
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+  
+  # Redis (optional for dev)
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  
+  # Security: Disable in dev
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://dev-auth.example.com
+
+# Server Configuration
+server:
+  port: 8080
+
+# Eureka: Disabled in dev
+eureka:
+  client:
+    enabled: false
+
+---
+# ========================================
+# DOCKER PROFILE
+# ========================================
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+  
+  # PostgreSQL Database
+  datasource:
+    url: jdbc:postgresql://postgres:5432/fintech
+    username: fintech_user
+    password: fintech_password
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate  # Use Flyway/Liquibase for migrations
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  # Redis
+  data:
+    redis:
+      host: redis
+      port: 6379
+  
+  # Security
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://auth-server:8081
+
+# Server Configuration
+server:
+  port: 8080
+
+# Eureka Service Discovery
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${random.value}
+
+# Distributed Tracing
+management:
+  tracing:
+    sampling:
+      probability: 1.0  # 100% sampling in dev
+  zipkin:
+    tracing:
+      endpoint: http://zipkin:9411/api/v2/spans
+
+---
+# ========================================
+# KUBERNETES PROFILE
+# ========================================
+
+spring:
+  config:
+    activate:
+      on-profile: k8s
+  
+  # PostgreSQL Database (from ConfigMap/Secret)
+  datasource:
+    url: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+  
+  # Redis
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+  
+  # Security
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI}
+
+# Server Configuration
+server:
+  port: 8080
+  shutdown: graceful  # Graceful shutdown for k8s
+
+# Eureka Service Discovery
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: ${EUREKA_SERVICE_URL}
+  instance:
+    prefer-ip-address: true
+    hostname: ${HOSTNAME}
+
+# Distributed Tracing
+management:
+  tracing:
+    sampling:
+      probability: 0.1  # 10% sampling in production
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_ENDPOINT}
+
+---
+# ========================================
+# PRODUCTION PROFILE
+# ========================================
+
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  # PostgreSQL Database
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+  
+  # JPA Configuration
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+        order_inserts: true
+        order_updates: true
+        cache:
+          use_second_level_cache: true
+          region:
+            factory_class: org.hibernate.cache.jcache.JCacheRegionFactory
+  
+  # Redis
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+  
+  # Security
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI}
+
+# Server Configuration
+server:
+  port: 8080
+  shutdown: graceful
+
+# Logging (production)
+logging:
+  level:
+    root: WARN
+    com.calvin.fintech: INFO
+    org.springframework: WARN
+    org.hibernate.SQL: WARN
+
+# Eureka Service Discovery
+eureka:
+  client:
+    enabled: true
+    service-url:
+      defaultZone: ${EUREKA_SERVICE_URL}
+
+# Distributed Tracing
+management:
+  tracing:
+    sampling:
+      probability: 0.1  # 10% sampling
+
+# Resilience4j Configuration
+resilience4j:
+  circuitbreaker:
+    instances:
+      transactionService:
+        sliding-window-size: 100
+        minimum-number-of-calls: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 60s
+        permitted-number-of-calls-in-half-open-state: 5
+  
+  retry:
+    instances:
+      transactionService:
+        max-attempts: 3
+        wait-duration: 1s
+        retry-exceptions:
+          - org.springframework.web.client.ResourceAccessException
+  
+  ratelimiter:
+    instances:
+      transactionService:
+        limit-for-period: 100
+        limit-refresh-period: 1s
+        timeout-duration: 0s
