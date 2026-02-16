@@ -1,0 +1,177 @@
+# ConfigMap for Transaction Service
+# Stores non-sensitive configuration data
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: transaction-service-config
+  namespace: fintech
+  labels:
+    app: transaction-service
+    version: v1
+data:
+  # Application configuration
+  application.yaml: |
+    spring:
+      application:
+        name: transaction-service
+      
+      # Enable Virtual Threads (Java 21)
+      threads:
+        virtual:
+          enabled: true
+      
+      # JPA Configuration
+      jpa:
+        show-sql: false
+        hibernate:
+          ddl-auto: validate
+        properties:
+          hibernate:
+            format_sql: true
+            use_sql_comments: true
+            jdbc:
+              batch_size: 20
+      
+      # Redis Cache Configuration
+      cache:
+        type: redis
+        redis:
+          time-to-live: 600000  # 10 minutesms
+      
+      # Actuator Configuration
+      management:
+        endpoints:
+          web:
+            exposure:
+              include: health,info,metrics,prometheus
+        health:
+          probes:
+            enabled: true
+          livenessState:
+            enabled: true
+          readinessState:
+            enabled: true
+        metrics:
+          export:
+            prometheus:
+              enabled: true
+          distribution:
+            percentiles-histogram:
+              http.server.requests: true
+    
+    # Logging Configuration
+    logging:
+      level:
+        root: INFO
+        com.calvin.fintech: DEBUG
+        org.springframework.web: INFO
+        org.hibernate.SQL: DEBUG
+        org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+      pattern:
+        console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+        file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  
+  # Eureka Client Configuration
+  eureka-config.yaml: |
+    eureka:
+      client:
+        serviceUrl:
+          defaultZone: http://discovery-server:8761/eureka/
+        fetchRegistry: true
+        registerWithEureka: true
+        healthcheck:
+          enabled: true
+      instance:
+        preferIpAddress: true
+        instanceId: ${spring.application.name}:${random.value}
+        leaseRenewalIntervalInSeconds: 10
+        metadataMap:
+          version: v1
+          environment: production
+
+---
+# ConfigMap for Customer Service
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: customer-service-config
+  namespace: fintech
+  labels:
+    app: customer-service
+    version: v1
+data:
+  application.yaml: |
+    spring:
+      application:
+        name: customer-service
+      threads:
+        virtual:
+          enabled: true
+      jpa:
+        show-sql: false
+        hibernate:
+          ddl-auto: validate
+      cache:
+        type: redis
+    
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,metrics,prometheus
+      health:
+        probes:
+          enabled: true
+      metrics:
+        export:
+          prometheus:
+            enabled: true
+    
+    logging:
+      level:
+        root: INFO
+        com.calvin.fintech: DEBUG
+
+---
+# ConfigMap for Account Service
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: account-service-config
+  namespace: fintech
+  labels:
+    app: account-service
+    version: v1
+data:
+  application.yaml: |
+    spring:
+      application:
+        name: account-service
+      threads:
+        virtual:
+          enabled: true
+      jpa:
+        show-sql: false
+        hibernate:
+          ddl-auto: validate
+      cache:
+        type: redis
+    
+    management:
+      endpoints:
+        web:
+          exposure:
+            include: health,info,metrics,prometheus
+      health:
+        probes:
+          enabled: true
+      metrics:
+        export:
+          prometheus:
+            enabled: true
+    
+    logging:
+      level:
+        root: INFO
+        com.calvin.fintech: DEBUG

@@ -1,0 +1,106 @@
+# Transaction Service - Kubernetes Service
+# Exposes the deployment to other services and external traffic
+
+---
+# Internal ClusterIP Service
+# Used for service-to-service communication within the cluster
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-service
+  namespace: fintech
+  labels:
+    app: transaction-service
+    version: v1
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8080"
+    prometheus.io/path: "/actuator/prometheus"
+spec:
+  type: ClusterIP
+  selector:
+    app: transaction-service
+    version: v1
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  sessionAffinity: ClientIP
+  sessionAffinityConfig:
+    clientIP:
+      timeoutSeconds: 10800  # 3 hours
+
+---
+# Headless Service (for StatefulSet-like discovery)
+# Returns IP addresses of all pods instead of load-balancing
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-service-headless
+  namespace: fintech
+  labels:
+    app: transaction-service
+spec:
+  type: ClusterIP
+  clusterIP: None  # Headless service
+  selector:
+    app: transaction-service
+  ports:
+  - name: http
+    port: 8080
+    targetPort: 8080
+
+---
+# LoadBalancer Service (for external access)
+# Creates an external load balancer (cloud provider dependent)
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-service-external
+  namespace: fintech
+  labels:
+    app: transaction-service
+  annotations:
+    # AWS specific annotations
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"
+    service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
+    # Azure specific annotations
+    # service.beta.kubernetes.io/azure-load-balancer-internal: "false"
+    # GCP specific annotations
+    # cloud.google.com/load-balancer-type: "External"
+spec:
+  type: LoadBalancer
+  selector:
+    app: transaction-service
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    protocol: TCP
+  sessionAffinity: ClientIP
+
+---
+# NodePort Service (alternative for external access)
+# Exposes the service on each Node's IP at a static port
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: transaction-service-nodeport
+  namespace: fintech
+  labels:
+    app: transaction-service
+spec:
+  type: NodePort
+  selector:
+    app: transaction-service
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+    nodePort: 30080  # External port (30000-32767 range)
+    protocol: TCP
