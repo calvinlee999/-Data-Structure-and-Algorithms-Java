@@ -1,0 +1,48 @@
+# Service Registry (Eureka Server) Configuration
+
+server:
+  port: 8761
+
+spring:
+  application:
+    name: service-registry
+
+eureka:
+  client:
+    # This server doesn't register itself (it IS the registry)
+    register-with-eureka: false
+    fetch-registry: false
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  
+  server:
+    # Response cache settings
+    response-cache-update-interval-ms: 5000  # Update cache every 5s
+    
+    # Self-preservation mode (disable in dev, enable in prod)
+    # When enabled, Eureka won't remove services during network issues
+    enable-self-preservation: false  # Dev: false, Prod: true
+    
+    # Eviction settings
+    eviction-interval-timer-in-ms: 10000  # Check for eviction every 10s
+    
+  instance:
+    hostname: localhost
+
+# Management endpoints
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+
+# Logging
+logging:
+  level:
+    com.netflix.eureka: INFO
+    com.netflix.discovery: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

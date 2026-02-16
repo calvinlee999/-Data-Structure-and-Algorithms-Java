@@ -1,0 +1,101 @@
+# Gateway Configuration
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  
+  # Virtual threads (Java 21)
+  threads:
+    virtual:
+      enabled: true
+  
+  # Cloud Gateway Configuration
+  cloud:
+    gateway:
+      # Global CORS configuration
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            
+      # Default filters (apply to all routes)
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      
+      # Discovery integration
+      discovery:
+        locator:
+          enabled: true  # Enable service discovery routing
+          lower-case-service-id: true
+
+# Eureka client configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 30
+
+# Circuit breaker configuration
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-size: 10
+        permitted-number-of-calls-in-half-open-state: 3
+        wait-duration-in-open-state: 30s
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 50
+        slow-call-duration-threshold: 2s
+    instances:
+      paymentCircuitBreaker:
+        base-config: default
+      userCircuitBreaker:
+        base-config: default
+      accountCircuitBreaker:
+        base-config: default
+
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 100ms
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.io.IOException
+          - java.net.ConnectException
+
+# Distributed tracing
+management:
+  tracing:
+    sampling:
+      probability: 1.0  # Trace 100% (use 0.1 in prod for 10%)
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+# Logging
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.calvin.fintech: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} | %5p | %-40.40logger{39} | %m%n"
